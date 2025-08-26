@@ -1,0 +1,38 @@
+{
+  "name": "cerebro-modeler",
+  "version": "1.0.0",
+  "description": "cerebro-modeler scans your SQL Server schema and generates clean, type-safe TypeORM entities. Powered by your database. Inspired by Cerebro",
+  "main": "main.ts",
+  "license": "MIT",
+  "scripts": {
+    "test": "tsx src/main.ts test -h 192.168.226.85 -p 14110 -u sa -x cerebro -d pokerPrimeTest2",
+    "dev": "tsx src/main.ts",
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.{ts,js,json}\""
+  },
+  "dependencies": {
+    "fs-extra": "^11.3.1",
+    "inquirer": "^12.9.4",
+    "mssql": "^11.0.1",
+    "yargs": "^18.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.9",
+    "@types/mssql": "^9.1.7",
+    "@types/node": "^24.3.0",
+    "@types/yargs": "^17.0.33",
+    "@typescript-eslint/eslint-plugin": "^8.40.0",
+    "@typescript-eslint/parser": "^8.40.0",
+    "eslint": "^9.34.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-unused-imports": "^4.2.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
