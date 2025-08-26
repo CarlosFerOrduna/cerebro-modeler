@@ -42,13 +42,24 @@ export class PropertyGenerator {
     const opts: string[] = [];
     const isNotLengthyType = !['datetime', 'bit', 'date', 'int', 'bigint', 'smallint'].includes(col.type);
 
-    if (col.isNullable) opts.push(`nullable: true`);
-    if (col.isUnique) opts.push(`unique: true`);
-    if (isNotLengthyType && col.length && col.type !== 'text') opts.push(`length: ${col.length}`);
-    if (isNotLengthyType && col.precision) opts.push(`precision: ${col.precision}`);
-    if (isNotLengthyType && col.scale) opts.push(`scale: ${col.scale}`);
-    if (col.defaultValue) opts.push(`default: () => '${col.defaultValue.replace(/^\((.+)\)$/, '$1')}'`);
-
+    if (col.isNullable) {
+      opts.push(`nullable: true`);
+    }
+    if (col.isUnique) {
+      opts.push(`unique: true`);
+    }
+    if (isNotLengthyType && col.length && !['text', 'decimal'].includes(col.type)) {
+      opts.push(`length: ${col.length}`);
+    }
+    if (isNotLengthyType && col.precision) {
+      opts.push(`precision: ${col.precision}`);
+    }
+    if (isNotLengthyType && col.scale) {
+      opts.push(`scale: ${col.scale}`);
+    }
+    if (col.defaultValue) {
+      opts.push(`default: () => '${col.defaultValue.replace(/\'/g, '').replace(/^\((.+)\)$/, '$1')}'`);
+    }
     return opts.length ? ', ' + opts.join(', ') : '';
   }
 

@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import prettier from 'prettier';
 
 export class FileWriter {
   private ignoredDirs = ['node_modules', '.git', 'dist', 'out'];
@@ -13,7 +14,9 @@ export class FileWriter {
     for (const [filename, content] of files.entries()) {
       const outputPath = await this.resolvePath(filename);
       await fs.ensureDir(path.dirname(outputPath));
-      await fs.writeFile(outputPath, content, 'utf-8');
+
+      const formatted = await this.formatWithPrettier(content, outputPath);
+      await fs.writeFile(outputPath, formatted, 'utf-8');
     }
   }
 
@@ -45,5 +48,15 @@ export class FileWriter {
     }
 
     return null;
+  }
+
+  private async formatWithPrettier(code: string, filepath: string): Promise<string> {
+    try {
+      const options = await prettier.resolveConfig(filepath);
+      return prettier.format(code, { ...options, filepath });
+    } catch (err) {
+      console.warn(`⚠️ Prettier failed on ${filepath}: ${err}`);
+      return code;
+    }
   }
 }

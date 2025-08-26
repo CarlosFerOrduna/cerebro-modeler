@@ -1,0 +1,73 @@
+diff --git a/src/core/output/file-writer.ts b/src/core/output/file-writer.ts
+index 4e46bb6..9785071 100644
+--- a/src/core/output/file-writer.ts
++++ b/src/core/output/file-writer.ts
+@@ -1,5 +1,6 @@
+ import fs from 'fs-extra';
+ import path from 'path';
++import prettier from 'prettier';
+ 
+ export class FileWriter {
+   private ignoredDirs = ['node_modules', '.git', 'dist', 'out'];
+@@ -13,7 +14,9 @@ export class FileWriter {
+     for (const [filename, content] of files.entries()) {
+       const outputPath = await this.resolvePath(filename);
+       await fs.ensureDir(path.dirname(outputPath));
+-      await fs.writeFile(outputPath, content, 'utf-8');
++
++      const formatted = await this.formatWithPrettier(content, outputPath);
++      await fs.writeFile(outputPath, formatted, 'utf-8');
+     }
+   }
+ 
+@@ -46,4 +49,14 @@ export class FileWriter {
+ 
+     return null;
+   }
++
++  private async formatWithPrettier(code: string, filepath: string): Promise<string> {
++    try {
++      const options = await prettier.resolveConfig(filepath);
++      return prettier.format(code, { ...options, filepath });
++    } catch (err) {
++      console.warn(`⚠️ Prettier failed on ${filepath}: ${err}`);
++      return code;
++    }
++  }
+ }
+diff --git a/src/core/output/generators/property-generator.ts b/src/core/output/generators/property-generator.ts
+index 55b6c5e..f7f271e 100644
+--- a/src/core/output/generators/property-generator.ts
++++ b/src/core/output/generators/property-generator.ts
+@@ -42,13 +42,24 @@ export class PropertyGenerator {
+     const opts: string[] = [];
+     const isNotLengthyType = !['datetime', 'bit', 'date', 'int', 'bigint', 'smallint'].includes(col.type);
+ 
+-    if (col.isNullable) opts.push(`nullable: true`);
+-    if (col.isUnique) opts.push(`unique: true`);
+-    if (isNotLengthyType && col.length && col.type !== 'text') opts.push(`length: ${col.length}`);
+-    if (isNotLengthyType && col.precision) opts.push(`precision: ${col.precision}`);
+-    if (isNotLengthyType && col.scale) opts.push(`scale: ${col.scale}`);
+-    if (col.defaultValue) opts.push(`default: () => '${col.defaultValue.replace(/^\((.+)\)$/, '$1')}'`);
+-
++    if (col.isNullable) {
++      opts.push(`nullable: true`);
++    }
++    if (col.isUnique) {
++      opts.push(`unique: true`);
++    }
++    if (isNotLengthyType && col.length && !['text', 'decimal'].includes(col.type)) {
++      opts.push(`length: ${col.length}`);
++    }
++    if (isNotLengthyType && col.precision) {
++      opts.push(`precision: ${col.precision}`);
++    }
++    if (isNotLengthyType && col.scale) {
++      opts.push(`scale: ${col.scale}`);
++    }
++    if (col.defaultValue) {
++      opts.push(`default: () => '${col.defaultValue.replace(/\'/g, '').replace(/^\((.+)\)$/, '$1')}'`);
++    }
+     return opts.length ? ', ' + opts.join(', ') : '';
+   }
+ 
