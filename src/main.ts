@@ -1,23 +1,39 @@
+#!/usr/bin/env node
+
 import path from 'path';
 import { parseArgs } from './cli/arg-parser';
-import { DB } from './db/connect';
-import { readSchema } from './readers/schema-reader';
-import { EntityWriter } from './writers/entity-writer';
-import { writeFiles } from './writers/file-writer';
+import { DriverFactory } from './core/db/driver-factory';
+import { EntityWriter, FileWriter } from './core/output';
+import { ImportPathResolver, NameFormatterContextual } from './core/utils';
 
 const main = async () => {
   try {
     const args = await parseArgs();
-    const pool = await DB.getPool(args);
+    const driver = DriverFactory.create(args);
 
-    const schema = await readSchema(pool, args.schema, args.tables);
-    await DB.close(args.verbose);
+    await driver.connect();
 
-    const files = new EntityWriter(schema).generateEntities();
-    const baseDir = process.cwd();
-    const outputPath = path.resolve(baseDir, args.output);
+    const schema = await driver.readSchema(args.schema, args.tables);
 
-    await writeFiles(files, outputPath);
+    await driver.close();
+
+    const formatter = new NameFormatterContextual({
+      file: {
+        case: args.caseFile,
+        prefix: args.prefixFile,
+        suffix: args.suffixFile,
+        treatSuffixAsExtension: args.fileExtension,
+      },
+      class: { case: args.caseClass, prefix: args.prefixClass, suffix: args.suffixClass },
+      property: { case: args.caseProperty, prefix: args.prefixProperty, suffix: args.suffixProperty },
+    });
+
+    const fileWriter = new FileWriter(path.resolve(args.output), args.writeMode);
+    const importPathResolver = new ImportPathResolver(fileWriter);
+    const writer = new EntityWriter(schema, formatter, importPathResolver);
+    const files = await writer.generateEntities();
+
+    await fileWriter.writeFiles(files);
   } catch (error) {
     console.error('❌ Error while parsing arguments:', error);
     process.exit(1);

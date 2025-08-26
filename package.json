@@ -2,10 +2,12 @@
   "name": "cerebro-modeler",
   "version": "1.0.0",
   "description": "cerebro-modeler scans your SQL Server schema and generates clean, type-safe TypeORM entities. Powered by your database. Inspired by Cerebro",
-  "main": "main.ts",
+  "main": "dist/main.js",
   "license": "MIT",
+  "bin": {
+    "cerebro-modeler": "./dist/main.js"
+  },
   "scripts": {
-    "test": "tsx src/main.ts test -h 192.168.226.85 -p 14110 -u sa -x cerebro -d pokerPrimeTest2",
     "dev": "tsx src/main.ts",
     "build": "tsc",
     "start": "node dist/main.js",
