@@ -100,6 +100,7 @@ export const parseArgs = async (): Promise<CliArgs> => {
       choices: ['inline', 'out'] as const,
       description: 'Write strategy: "inline" to overwrite project entities, "out" to export to standalone folder',
       default: 'out',
+      type: 'string',
     })
     .option('caseFile', {
       alias: 'cf',
@@ -231,7 +232,7 @@ export const parseArgs = async (): Promise<CliArgs> => {
     output: argv.output,
     ssl: argv.ssl,
     verbose: argv.verbose,
-    writeMode: (answers.writeMode ?? argv.writeMode) as 'inline' | 'out',
+    writeMode: argv.writeMode as 'inline' | 'out',
     caseFile: argv.caseFile as 'pascal' | 'camel' | 'snake' | 'kebab',
     caseClass: argv.caseClass as 'pascal' | 'camel' | 'snake',
     caseProperty: argv.caseProperty as 'pascal' | 'camel' | 'snake',

@@ -14,9 +14,9 @@ export class EntityWriter {
 
     for (const table of this.schema.tables) {
       const generator = new EntityGenerator(table, this.formatter, this.importPathResolver);
-      const className = generator.getClassName();
+
       const code = await generator.generate();
-      files.set(`${this.formatter.toFileFormat(className)}.ts`, code);
+      files.set(`${this.formatter.toFileFormat(table.name)}.ts`, code);
     }
 
     return files;

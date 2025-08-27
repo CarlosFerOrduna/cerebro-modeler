@@ -14,10 +14,6 @@ export class EntityGenerator {
     private importPathResolver: ImportPathResolver
   ) {}
 
-  getClassName(): string {
-    return this.table.name;
-  }
-
   async generate(): Promise<string> {
     const indices = new IndexDecoratorGenerator(this.table, this.usedImports).generate();
     const properties = new PropertyGenerator(this.table, this.usedImports, this.formatter).generate();
@@ -29,7 +25,7 @@ export class EntityGenerator {
       this.importPathResolver
     ).generate();
 
-    const className = this.formatter.toClassFormat(this.getClassName());
+    const className = this.formatter.toClassFormat(this.table.name);
 
     return [
       imports,
