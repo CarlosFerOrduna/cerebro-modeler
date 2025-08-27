@@ -46,5 +46,16 @@
     "prettier": "^3.6.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
-  }
+  },
+  "keywords": [
+    "cerebro-modeler",
+    "typeorm",
+    "mssql",
+    "cli",
+    "entity-generator",
+    "database-first",
+    "codegen",
+    "schema-introspection",
+    "npx"
+  ]
 }

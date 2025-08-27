@@ -2,7 +2,7 @@
 
 import path from 'path';
 import { parseArgs } from './cli/arg-parser';
-import { DriverFactory } from './core/db/driver-factory';
+import { DriverFactory } from './core/db';
 import { EntityWriter, FileWriter } from './core/output';
 import { ImportPathResolver, NameFormatterContextual } from './core/utils';
 

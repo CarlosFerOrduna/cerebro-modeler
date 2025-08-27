@@ -1,6 +1,5 @@
 import { CliArgs } from '../../cli/arg-parser';
-import { DatabaseDriver } from './drivers/database-driver';
-import { MssqlDriver } from './drivers/mssql-driver';
+import { DatabaseDriver, MssqlDriver } from './drivers';
 
 export class DriverFactory {
   static create(args: CliArgs): DatabaseDriver {

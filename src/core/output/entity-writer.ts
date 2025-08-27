@@ -1,7 +1,6 @@
 import { Database } from '../schema';
-import { NameFormatterContextual } from '../utils';
+import { ImportPathResolver, NameFormatterContextual } from '../utils';
 import { EntityGenerator } from './generators';
-import { ImportPathResolver } from '../utils/import-path-resolver';
 
 export class EntityWriter {
   constructor(

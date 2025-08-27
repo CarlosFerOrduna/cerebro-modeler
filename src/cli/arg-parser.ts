@@ -152,8 +152,7 @@ export const parseArgs = async (): Promise<CliArgs> => {
     .option('file-extension', {
       alias: 'fs',
       type: 'boolean',
-      description:
-        'Treat the file suffix as a file extension (e.g., ".entity" → user.entity.ts instead of userEntity.ts)',
+      description: 'Treat the file suffix as a file extension (e.g "entity" → user.entity.ts instead of userEntity.ts)',
       default: false,
     })
     .help()
@@ -211,19 +210,6 @@ export const parseArgs = async (): Promise<CliArgs> => {
       message: 'Enter table names (comma-separated):',
       when: answers => answers.allTables === false,
       validate: input => input.trim() !== '' || 'Please specify at least one table.',
-    });
-  }
-
-  if (!argv.writeMode) {
-    questions.push({
-      type: 'list',
-      name: 'writeMode',
-      message: 'Where should the generated entities be saved?',
-      choices: [
-        { name: 'Export to ./out directory', value: 'out' },
-        { name: 'Replace existing entities in current project', value: 'inline' },
-      ],
-      default: 'out',
     });
   }
 

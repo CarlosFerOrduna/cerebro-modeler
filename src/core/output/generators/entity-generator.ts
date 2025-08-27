@@ -1,10 +1,9 @@
 import { Table } from '../../schema';
-import { NameFormatterContextual } from '../../utils';
+import { ImportPathResolver, NameFormatterContextual } from '../../utils';
 import { ImportGenerator } from './import-generator';
 import { IndexDecoratorGenerator } from './index-decorator-generator';
 import { PropertyGenerator } from './property-generator';
 import { RelationGenerator } from './relation-generator';
-import { ImportPathResolver } from '../../utils/import-path-resolver';
 
 export class EntityGenerator {
   private usedImports = new Set<string>(['Entity']);

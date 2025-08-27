@@ -99,7 +99,7 @@ If the `--tables` flag is not provided, the CLI will prompt you interactively:
 | ------------------ | ------ | ------------------------------------------------------------------------------------- |
 | `--engine`         | `-e`   | Database engine (currently only `mssql` is supported)                                 |
 | `--tables`         | `-t`   | Comma-separated list of tables to introspect (e.g., `users,orders`)                   |
-| `--ssl`            | —      | Use SSL connection to the database                                                    |
+| `--ssl`            |        | Use SSL connection to the database                                                    |
 | `--verbose`        | `-v`   | Enable verbose logging for debugging and visibility                                   |
 | `--writeMode`      | `-w`   | Writing strategy: `inline` replaces existing files, `out` saves to separate directory |
 | `--caseFile`       | `--cf` | Naming style for file names: `pascal`, `camel`, `snake`, `kebab`                      |
