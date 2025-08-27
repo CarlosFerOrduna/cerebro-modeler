@@ -8,6 +8,11 @@
   "bin": {
     "cerebro-modeler": "./dist/main.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/CarlosFerOrduna/cerebro-modeler"
+  },
+  "homepage": "https://github.com/CarlosFerOrduna/cerebro-modeler#readme",
   "files": [
     "dist/",
     "src/"
