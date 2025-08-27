@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
+    "declaration": true,
     "outDir": "dist",
+    "emitDeclarationOnly": false,
+    "declarationMap": true,
     "target": "ES2020",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",

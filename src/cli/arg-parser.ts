@@ -95,7 +95,7 @@ export const parseArgs = async (): Promise<CliArgs> => {
       description: 'Enable verbose logging',
       default: false,
     })
-    .option('write-mode', {
+    .option('writeMode', {
       alias: 'w',
       choices: ['inline', 'out'] as const,
       description: 'Write strategy: "inline" to overwrite project entities, "out" to export to standalone folder',
