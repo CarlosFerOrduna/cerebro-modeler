@@ -37,7 +37,9 @@ export class RelationGenerator {
       this.used.add('OneToMany');
 
       const alias = this.formatter.toPropertyFormat(fk.sourceTable);
-      const property = count[alias] ? `${alias}s${++count[alias]}` : `${alias}s`;
+      count[alias] = (count[alias] ?? 0) + 1;
+      const property = `${alias}s${count[alias] > 1 ? count[alias] : ''}`;
+
       const sourceClass = this.formatter.toClassFormat(fk.sourceTable);
       const inverse = this.formatter.toPropertyFormat(fk.sourceColumns[0].replace(/Id$/, ''));
 
