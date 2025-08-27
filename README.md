@@ -5,7 +5,7 @@
 ![written in TypeScript](https://img.shields.io/badge/Language-TypeScript-blue)
 
 <p align="center">
-  <img src="./cerebro-modeler-cover.jpg" alt="cerebro-modeler" width="600" />
+  <img src="https://raw.githubusercontent.com/CarlosFerOrduna/cerebro-modeler/refs/heads/main/cerebro-modeler-cover.jpg" alt="cerebro-modeler" width="600" />
 </p>
 
 > Database-first entity generator for TypeORM with full control over formatting, imports, and schema introspection.  
