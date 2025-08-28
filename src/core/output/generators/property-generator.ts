@@ -40,7 +40,7 @@ export class PropertyGenerator {
 
   private columnOptions(col: Column): string {
     const opts: string[] = [];
-    const isNotLengthyType = !['datetime', 'bit', 'date', 'int', 'bigint', 'smallint'].includes(col.type);
+    const isNotLengthyType = !['datetime', 'datetime2', 'bit', 'date', 'int', 'bigint', 'smallint'].includes(col.type);
 
     if (col.isNullable) {
       opts.push(`nullable: true`);
