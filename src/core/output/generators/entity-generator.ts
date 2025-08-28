@@ -11,13 +11,19 @@ export class EntityGenerator {
   constructor(
     private table: Table,
     private formatter: NameFormatterContextual,
-    private importPathResolver: ImportPathResolver
+    private importPathResolver: ImportPathResolver,
+    private relationContext: Map<string, string>
   ) {}
 
   async generate(): Promise<string> {
     const indices = new IndexDecoratorGenerator(this.table, this.usedImports).generate();
     const properties = new PropertyGenerator(this.table, this.usedImports, this.formatter).generate();
-    const relations = new RelationGenerator(this.table, this.usedImports, this.formatter).generate();
+    const relations = new RelationGenerator(
+      this.table,
+      this.usedImports,
+      this.formatter,
+      this.relationContext
+    ).generate();
     const imports = await new ImportGenerator(
       this.table,
       this.usedImports,

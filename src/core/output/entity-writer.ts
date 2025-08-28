@@ -1,6 +1,6 @@
 import { Database } from '../schema';
 import { ImportPathResolver, NameFormatterContextual } from '../utils';
-import { EntityGenerator } from './generators';
+import { EntityGenerator, RelationGenerator } from './generators';
 
 export class EntityWriter {
   constructor(
@@ -12,8 +12,15 @@ export class EntityWriter {
   async generateEntities(): Promise<Map<string, string>> {
     const files = new Map<string, string>();
 
+    const relationContext = new Map<string, string>();
+
     for (const table of this.schema.tables) {
-      const generator = new EntityGenerator(table, this.formatter, this.importPathResolver);
+      const relationGen = new RelationGenerator(table, new Set(), this.formatter, relationContext);
+      relationGen.generateOneToMany();
+    }
+
+    for (const table of this.schema.tables) {
+      const generator = new EntityGenerator(table, this.formatter, this.importPathResolver, relationContext);
 
       const code = await generator.generate();
       files.set(`${this.formatter.toFileFormat(table.name)}.ts`, code);

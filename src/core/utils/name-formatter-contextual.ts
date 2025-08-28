@@ -1,4 +1,5 @@
 import { NameFormatter } from './name-formatter';
+import pluralize from 'pluralize';
 
 export interface NameFormatterOptions {
   file?: FileNamingOptions;
@@ -32,6 +33,10 @@ export class NameFormatterContextual {
 
   toPropertyFormat(name: string): string {
     return this.format(name, this.options.property);
+  }
+
+  toPluralPropertyFormat(name: string): string {
+    return pluralize(this.toPropertyFormat(name));
   }
 
   private format(name: string, config?: NamingOptions): string {
