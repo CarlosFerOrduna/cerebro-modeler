@@ -42,16 +42,10 @@ export class NameFormatter {
     caseType: 'camel' | 'pascal' | 'snake' | 'kebab',
     prefix?: string,
     suffix?: string,
-    treatSuffixAsExtension?: boolean
+    fileExtension?: string
   ): string {
-    const base = this.applyCase(this.applyAffixes(raw, prefix, undefined), caseType);
-
-    if (treatSuffixAsExtension && suffix) {
-      const ext = suffix.startsWith('.') ? suffix : `.${suffix}`;
-      return `${base}${ext}`;
-    }
-
-    return this.applyAffixes(base, undefined, suffix ? this.applyCase(suffix, caseType) : undefined);
+    const result = this.applyCase(this.applyAffixes(raw, prefix, suffix), caseType);
+    return fileExtension ? `${result}.${fileExtension}` : result;
   }
 
   private static splitWords(str: string): string[] {

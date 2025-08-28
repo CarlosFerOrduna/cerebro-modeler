@@ -100,7 +100,6 @@ If the `--tables` flag is not provided, the CLI will prompt you interactively:
 | `--engine`         | `-e`   | Database engine (currently only `mssql` is supported)                                 |
 | `--tables`         | `-t`   | Comma-separated list of tables to introspect (e.g., `users,orders`)                   |
 | `--ssl`            |        | Use SSL connection to the database                                                    |
-| `--verbose`        | `-v`   | Enable verbose logging for debugging and visibility                                   |
 | `--writeMode`      | `-w`   | Writing strategy: `inline` replaces existing files, `out` saves to separate directory |
 | `--caseFile`       | `--cf` | Naming style for file names: `pascal`, `camel`, `snake`, `kebab`                      |
 | `--caseClass`      | `--cc` | Naming style for class names inside files: `pascal`, `camel`, `snake`                 |
@@ -108,10 +107,10 @@ If the `--tables` flag is not provided, the CLI will prompt you interactively:
 | `--prefixFile`     | `--pf` | Add prefix to file names (e.g., `"I"` → `IUser.ts`)                                   |
 | `--prefixClass`    | `--pc` | Add prefix to class names (e.g., `"I"` → `IUser`)                                     |
 | `--prefixProperty` | `--pp` | Add prefix to property names (e.g., `"_"` → `_createdAt`)                             |
-| `--suffixFile`     | `--sf` | Add suffix to file names (e.g., `".model"` → `User.model.ts`)                         |
+| `--suffixFile`     | `--sf` | Add suffix to file names (e.g., `"Model"` → `UserModel.ts`)                           |
 | `--suffixClass`    | `--sc` | Add suffix to class names (e.g., `"Model"` → `UserModel`)                             |
 | `--suffixProperty` | `--sp` | Add suffix to property names (e.g., `"_"` → `createdAt_`)                             |
-| `--file-extension` | `--fe` | Treat `--suffixFile` as file extension (e.g., `".entity"` → `user.entity.ts`)         |
+| `--fileExtension`  | `--fe` | Add a suffix to file names before `.ts` (e.g., `"entity"` → `user.entity.ts`)         |
 
 ---
 
@@ -119,16 +118,26 @@ If the `--tables` flag is not provided, the CLI will prompt you interactively:
 
 You can customize how files, classes, and properties are named using:
 
-- `--caseFile`, `--prefixFile`, `--suffixFile`
+- `--caseFile`, `--prefixFile`, `--suffixFile`, `--fileExtension`
 - `--caseClass`, `--prefixClass`, `--suffixClass`
 - `--caseProperty`, `--prefixProperty`, `--suffixProperty`
 
-Example:
+### File Naming Behavior
+
+The final file name is composed like this:
+
+```
+[prefix][BaseName][suffix][.fileExtension].ts
+```
+
+**Example:**
 
 ```bash
---caseFile kebab --prefixClass Base --suffixClass Model
-# → base-user-model.ts → class BaseUserModel
+--caseFile kebab --prefixFile i --suffixFile model --fileExtension entity
+# → i-user-model.entity.ts
 ```
+
+> The `--fileExtension` does not affect the class name. It is appended before `.ts` and treated as a true extension, not as a suffix for casing.
 
 ---
 
@@ -152,6 +161,7 @@ npx cerebro-modeler \
   --tables users,orders \
   --caseFile snake \
   --caseProperty camel \
+  --fileExtension entity \
   --output ./src/models
 ```
 

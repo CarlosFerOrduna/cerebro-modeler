@@ -7,7 +7,7 @@ export interface NameFormatterOptions {
 }
 
 export interface FileNamingOptions extends NamingOptions {
-  treatSuffixAsExtension?: boolean;
+  fileExtension?: string;
 }
 
 export interface NamingOptions {
@@ -23,7 +23,7 @@ export class NameFormatterContextual {
     const config = this.options.file;
     if (!config) return name;
 
-    return NameFormatter.formatName(name, config.case, config.prefix, config.suffix, config.treatSuffixAsExtension);
+    return NameFormatter.formatName(name, config.case, config.prefix, config.suffix, config.fileExtension);
   }
 
   toClassFormat(name: string): string {

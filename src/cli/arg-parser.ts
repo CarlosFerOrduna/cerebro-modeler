@@ -13,7 +13,6 @@ export interface CliArgs {
   tables: string[];
   output: string;
   ssl: boolean;
-  verbose: boolean;
   writeMode: 'inline' | 'out';
   caseFile: 'pascal' | 'camel' | 'snake' | 'kebab';
   caseClass: 'pascal' | 'camel' | 'snake';
@@ -24,7 +23,7 @@ export interface CliArgs {
   suffixFile?: string;
   suffixClass?: string;
   suffixProperty?: string;
-  fileExtension?: boolean;
+  fileExtension?: string;
 }
 
 type PromptAnswers = Partial<Pick<CliArgs, 'host' | 'user' | 'password' | 'database' | 'writeMode'>> & {
@@ -89,12 +88,6 @@ export const parseArgs = async (): Promise<CliArgs> => {
       description: 'Use SSL connection to the database',
       default: false,
     })
-    .option('verbose', {
-      alias: 'v',
-      type: 'boolean',
-      description: 'Enable verbose logging',
-      default: false,
-    })
     .option('writeMode', {
       alias: 'w',
       choices: ['inline', 'out'] as const,
@@ -150,11 +143,10 @@ export const parseArgs = async (): Promise<CliArgs> => {
       type: 'string',
       description: 'Optional suffix for property names (e.g., "_" → createdAt_)',
     })
-    .option('file-extension', {
-      alias: 'fs',
-      type: 'boolean',
-      description: 'Treat the file suffix as a file extension (e.g "entity" → user.entity.ts instead of userEntity.ts)',
-      default: false,
+    .option('fileExtension', {
+      alias: 'fe',
+      type: 'string',
+      description: 'Optional suffix for generated file names before ".ts" (e.g., "entity" → user.entity.ts)',
     })
     .help()
     .parseSync();
@@ -231,7 +223,6 @@ export const parseArgs = async (): Promise<CliArgs> => {
         : [],
     output: argv.output,
     ssl: argv.ssl,
-    verbose: argv.verbose,
     writeMode: argv.writeMode as 'inline' | 'out',
     caseFile: argv.caseFile as 'pascal' | 'camel' | 'snake' | 'kebab',
     caseClass: argv.caseClass as 'pascal' | 'camel' | 'snake',

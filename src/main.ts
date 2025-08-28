@@ -22,7 +22,7 @@ const main = async () => {
         case: args.caseFile,
         prefix: args.prefixFile,
         suffix: args.suffixFile,
-        treatSuffixAsExtension: args.fileExtension,
+        fileExtension: args.fileExtension,
       },
       class: { case: args.caseClass, prefix: args.prefixClass, suffix: args.suffixClass },
       property: { case: args.caseProperty, prefix: args.prefixProperty, suffix: args.suffixProperty },

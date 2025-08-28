@@ -10,7 +10,7 @@ export class MssqlDriver extends DatabaseDriver {
     private args: CliArgs,
     private reader = new MssqlReader()
   ) {
-    super(args.verbose);
+    super();
   }
 
   async connect(): Promise<void> {
@@ -35,10 +35,6 @@ export class MssqlDriver extends DatabaseDriver {
         idleTimeoutMillis: 30000,
       },
     };
-
-    if (this.args.verbose) {
-      this.log('Connecting with config:', { ...config, password: '*****' });
-    }
 
     try {
       this.pool = await sql.connect(config);
