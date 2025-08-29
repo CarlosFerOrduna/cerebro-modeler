@@ -13,7 +13,7 @@ const main = async () => {
 
     await driver.connect();
 
-    const schema = await driver.readSchema(args.schema, args.tables);
+    const schema = await driver.readSchema(args.schema, args.tables, args.ignoreTables);
 
     await driver.close();
 

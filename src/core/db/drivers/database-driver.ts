@@ -6,7 +6,7 @@ export abstract class DatabaseDriver {
 
   abstract getConnection(): ConnectionPool;
 
-  abstract readSchema(schema: string, tables: string[]): Promise<Database>;
+  abstract readSchema(schema: string, tables: string[], ignoreTables: string[]): Promise<Database>;
 
   abstract close(): Promise<void>;
 

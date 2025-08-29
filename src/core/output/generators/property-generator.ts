@@ -10,9 +10,10 @@ export class PropertyGenerator {
 
   generate(): string[] {
     const fkCols = new Set(this.table.foreignKeys.map(fk => fk.sourceColumns[0]));
+    const idxCol = new Set(this.table.indexes.flatMap(idx => idx.columns));
 
     return this.table.columns
-      .filter(col => !fkCols.has(col.name))
+      .filter(col => idxCol.has(col.name) || !fkCols.has(col.name))
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(col => this.buildColumn(col));
   }

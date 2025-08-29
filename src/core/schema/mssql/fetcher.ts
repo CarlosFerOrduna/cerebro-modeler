@@ -3,13 +3,18 @@ import { ConnectionPool } from 'mssql';
 export class MssqlSchemaFetcher {
   constructor(private pool: ConnectionPool) {}
 
-  async fetchColumns(schema: string, tables: string[]) {
+  async fetchColumns(schema: string, tables: string[], ignoreTables: string[]) {
     const tableCondition = tables.length > 0 ? `AND t.name IN (${tables.map((_, i) => `@table${i}`).join(', ')})` : '';
+    const ignoreTableCondition =
+      ignoreTables.length > 0
+        ? `AND t.name NOT IN (${ignoreTables.map((_, i) => `@ignore_table${i}`).join(', ')})`
+        : '';
 
     const columnRequest = this.pool.request().input('schema', schema);
     tables.forEach((table, i) => columnRequest.input(`table${i}`, table));
+    ignoreTables.forEach((table, i) => columnRequest.input(`ignore_table${i}`, table));
 
-    const result = await columnRequest.query(`
+    const query = `
       SELECT
         t.name AS tableName,
         c.name AS columnName,
@@ -27,18 +32,26 @@ export class MssqlSchemaFetcher {
       JOIN sys.schemas s ON t.schema_id = s.schema_id
       WHERE s.name = @schema
       ${tableCondition}
-    `);
+      ${ignoreTableCondition}
+    `;
+
+    const result = await columnRequest.query(query);
 
     return result.recordset;
   }
 
-  async fetchPrimaryKeys(schema: string, tables: string[]) {
+  async fetchPrimaryKeys(schema: string, tables: string[], ignoreTables: string[]) {
     const tableCondition = tables.length > 0 ? `AND t.name IN (${tables.map((_, i) => `@table${i}`).join(', ')})` : '';
+    const ignoreTableCondition =
+      ignoreTables.length > 0
+        ? `AND t.name NOT IN (${ignoreTables.map((_, i) => `@ignore_table${i}`).join(', ')})`
+        : '';
 
     const pkRequest = this.pool.request().input('schema', schema);
     tables.forEach((table, i) => pkRequest.input(`table${i}`, table));
+    ignoreTables.forEach((table, i) => pkRequest.input(`ignore_table${i}`, table));
 
-    const result = await pkRequest.query(`
+    const query = `
       SELECT 
         kc.name AS pkName,
         t.name AS tableName,
@@ -50,18 +63,26 @@ export class MssqlSchemaFetcher {
       JOIN sys.schemas s ON t.schema_id = s.schema_id
       WHERE kc.type = 'PK' AND s.name = @schema
       ${tableCondition}
-    `);
+      ${ignoreTableCondition}
+    `;
+
+    const result = await pkRequest.query(query);
 
     return result.recordset;
   }
 
-  async fetchIndexes(schema: string, tables: string[]) {
+  async fetchIndexes(schema: string, tables: string[], ignoreTables: string[]) {
     const tableCondition = tables.length > 0 ? `AND t.name IN (${tables.map((_, i) => `@table${i}`).join(', ')})` : '';
+    const ignoreTableCondition =
+      ignoreTables.length > 0
+        ? `AND t.name NOT IN (${ignoreTables.map((_, i) => `@ignore_table${i}`).join(', ')})`
+        : '';
 
     const indexRequest = this.pool.request().input('schema', schema);
     tables.forEach((table, i) => indexRequest.input(`table${i}`, table));
+    ignoreTables.forEach((table, i) => indexRequest.input(`ignore_table${i}`, table));
 
-    const result = await indexRequest.query(`
+    const query = `
       SELECT
         t.name AS tableName,
         i.name AS indexName,
@@ -75,15 +96,22 @@ export class MssqlSchemaFetcher {
       JOIN sys.schemas s ON t.schema_id = s.schema_id
       WHERE s.name = @schema AND i.is_primary_key = 0
       ${tableCondition}
-    `);
+      ${ignoreTableCondition}
+    `;
+
+    const result = await indexRequest.query(query);
 
     return result.recordset;
   }
 
-  async fetchForeignKeys(schema: string, tables: string[]) {
+  async fetchForeignKeys(schema: string, tables: string[], ignoreTables: string[]) {
     const fkTableCondition =
       tables.length > 0
         ? `AND (t.name IN (${tables.map((_, i) => `@table${i}`).join(', ')}) OR tgt.name IN (${tables.map((_, i) => `@table${i}_tgt`).join(', ')}))`
+        : '';
+    const fkIgnoreTableCondition =
+      ignoreTables.length > 0
+        ? `AND (t.name NOT IN (${ignoreTables.map((_, i) => `@ignore_table${i}`).join(', ')}) AND tgt.name NOT IN (${ignoreTables.map((_, i) => `@ignore_table${i}_tgt`).join(', ')}))`
         : '';
 
     const fkRequest = this.pool.request().input('schema', schema);
@@ -91,8 +119,12 @@ export class MssqlSchemaFetcher {
       fkRequest.input(`table${i}`, table);
       fkRequest.input(`table${i}_tgt`, table);
     });
+    ignoreTables.forEach((table, i) => {
+      fkRequest.input(`ignore_table${i}`, table);
+      fkRequest.input(`ignore_table${i}_tgt`, table);
+    });
 
-    const result = await fkRequest.query(`
+    const query = `
       SELECT
         fk.name AS fkName,
         t.name AS sourceTable,
@@ -108,7 +140,10 @@ export class MssqlSchemaFetcher {
       JOIN sys.schemas s ON t.schema_id = s.schema_id
       WHERE s.name = @schema
       ${fkTableCondition}
-    `);
+      ${fkIgnoreTableCondition}
+    `;
+
+    const result = await fkRequest.query(query);
 
     return result.recordset;
   }

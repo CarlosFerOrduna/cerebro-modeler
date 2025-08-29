@@ -5,15 +5,15 @@ import { MssqlSchemaBuilder } from './builder';
 import { MssqlSchemaFetcher } from './fetcher';
 
 export class MssqlReader implements SchemaReader {
-  async read(pool: ConnectionPool, schema: string, tables: string[]): Promise<Database> {
+  async read(pool: ConnectionPool, schema: string, tables: string[], ignoreTables: string[]): Promise<Database> {
     const fetcher = new MssqlSchemaFetcher(pool);
     const builder = new MssqlSchemaBuilder(schema);
 
     const [columns, pks, indexes, fks] = await Promise.all([
-      fetcher.fetchColumns(schema, tables),
-      fetcher.fetchPrimaryKeys(schema, tables),
-      fetcher.fetchIndexes(schema, tables),
-      fetcher.fetchForeignKeys(schema, tables),
+      fetcher.fetchColumns(schema, tables, ignoreTables),
+      fetcher.fetchPrimaryKeys(schema, tables, ignoreTables),
+      fetcher.fetchIndexes(schema, tables, ignoreTables),
+      fetcher.fetchForeignKeys(schema, tables, ignoreTables),
     ]);
 
     return builder.buildDatabase(columns, pks, indexes, fks);

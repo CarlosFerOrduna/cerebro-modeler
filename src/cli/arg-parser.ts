@@ -11,6 +11,7 @@ export interface CliArgs {
   database: string;
   schema: string;
   tables: string[];
+  ignoreTables: string[];
   output: string;
   ssl: boolean;
   writeMode: 'inline' | 'out';
@@ -148,6 +149,11 @@ export const parseArgs = async (): Promise<CliArgs> => {
       type: 'string',
       description: 'Optional suffix for generated file names before ".ts" (e.g., "entity" → user.entity.ts)',
     })
+    .option('ignoreTables', {
+      alias: 'it',
+      type: 'string',
+      description: 'List of tables to ignore (comma-separated)',
+    })
     .help()
     .parseSync();
 
@@ -234,5 +240,6 @@ export const parseArgs = async (): Promise<CliArgs> => {
     suffixClass: argv.suffixClass,
     suffixProperty: argv.suffixProperty,
     fileExtension: argv.fileExtension,
+    ignoreTables: argv.ignoreTables ? argv.ignoreTables.split(',').map(t => t.trim()) : [],
   };
 };

@@ -51,8 +51,8 @@ export class MssqlDriver extends DatabaseDriver {
     return this.pool;
   }
 
-  async readSchema(schema: string, tables: string[]): Promise<Database> {
-    return this.reader.read(this.getConnection(), schema, tables);
+  async readSchema(schema: string, tables: string[], ignoreTables: string[]): Promise<Database> {
+    return this.reader.read(this.getConnection(), schema, tables, ignoreTables);
   }
 
   async close(): Promise<void> {

@@ -99,6 +99,7 @@ If the `--tables` flag is not provided, the CLI will prompt you interactively:
 | ------------------ | ------ | ------------------------------------------------------------------------------------- |
 | `--engine`         | `-e`   | Database engine (currently only `mssql` is supported)                                 |
 | `--tables`         | `-t`   | Comma-separated list of tables to introspect (e.g., `users,orders`)                   |
+| `--ignoreTables`   | `-it`  | Comma-separated list of tables to ignore (e.g., `notifications,logs`)                 |
 | `--ssl`            |        | Use SSL connection to the database                                                    |
 | `--writeMode`      | `-w`   | Writing strategy: `inline` replaces existing files, `out` saves to separate directory |
 | `--caseFile`       | `--cf` | Naming style for file names: `pascal`, `camel`, `snake`, `kebab`                      |
@@ -159,6 +160,7 @@ npx cerebro-modeler \
   --password MySecret123 \
   --database MyDB \
   --tables users,orders \
+  --ignoreTables notifications \
   --caseFile snake \
   --caseProperty camel \
   --fileExtension entity \
