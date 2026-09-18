@@ -1,7 +1,7 @@
+import fs from 'node:fs/promises';
 import path from 'path';
 
-import fs from 'node:fs/promises';
-import prettier from 'prettier';
+import { format, resolveConfig } from 'prettier';
 
 import { FileWriter } from './file-writer';
 
@@ -16,10 +16,8 @@ jest.mock('node:fs/promises', () => ({
 
 jest.mock('prettier', () => ({
   __esModule: true,
-  default: {
-    resolveConfig: jest.fn(),
-    format: jest.fn(),
-  },
+  resolveConfig: jest.fn(),
+  format: jest.fn(),
 }));
 
 interface MockDirEntry {
@@ -37,8 +35,8 @@ type FormatMock = (source: string, options?: Record<string, unknown>) => Promise
 const mockedMkdir = fs.mkdir as unknown as jest.MockedFunction<MkdirMock>;
 const mockedWriteFile = fs.writeFile as unknown as jest.MockedFunction<WriteFileMock>;
 const mockedReaddir = fs.readdir as unknown as jest.MockedFunction<ReaddirMock>;
-const mockedResolveConfig = prettier.resolveConfig as unknown as jest.MockedFunction<ResolveConfigMock>;
-const mockedFormat = prettier.format as unknown as jest.MockedFunction<FormatMock>;
+const mockedResolveConfig = resolveConfig as unknown as jest.MockedFunction<ResolveConfigMock>;
+const mockedFormat = format as unknown as jest.MockedFunction<FormatMock>;
 
 describe('FileWriter', () => {
   beforeEach(() => {
@@ -69,11 +67,7 @@ describe('FileWriter', () => {
     const writer = new FileWriter('/out', 'out');
     await writer.writeFiles(new Map([['user.entity.ts', 'RAW_CONTENT']]));
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      expect.stringContaining('user.entity.ts'),
-      'FORMATTED_CONTENT',
-      'utf-8'
-    );
+    expect(fs.writeFile).toHaveBeenCalledWith(expect.stringContaining('user.entity.ts'), 'FORMATTED_CONTENT', 'utf-8');
     expect(warnSpy).not.toHaveBeenCalled();
 
     warnSpy.mockRestore();
