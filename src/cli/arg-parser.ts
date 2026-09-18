@@ -98,8 +98,10 @@ function expandLongAliases(rawArgs: string[]): string[] {
     );
     if (!matchingDef) return arg;
 
-    const [, value] = arg.split('=');
-    return value === undefined ? `--${matchingDef.name}` : `--${matchingDef.name}=${value}`;
+    const equalsIndex = arg.indexOf('=');
+    if (equalsIndex === -1) return `--${matchingDef.name}`;
+
+    return `--${matchingDef.name}=${arg.slice(equalsIndex + 1)}`;
   });
 }
 
@@ -125,7 +127,14 @@ function printHelp(): void {
       .filter(Boolean)
       .join(', ');
 
-    console.log(`  ${flags}\n      ${def.description}`);
+    const meta = [
+      def.choices ? `[choices: ${def.choices.join(', ')}]` : undefined,
+      def.default !== undefined ? `[default: ${JSON.stringify(def.default)}]` : undefined,
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    console.log(`  ${flags}\n      ${def.description}${meta ? ` ${meta}` : ''}`);
   }
 }
 
@@ -158,14 +167,14 @@ function parseRawArgs(rawArgs: string[]): RawArgValues {
   return values as RawArgValues;
 }
 
-const argv = parseRawArgs(process.argv.slice(2));
-
 type PromptAnswers = Partial<Pick<CliArgs, 'host' | 'user' | 'password' | 'database' | 'writeMode'>> & {
   tables?: string;
   allTables?: boolean;
 };
 
 export const parseArgs = async (): Promise<CliArgs> => {
+  const argv = parseRawArgs(process.argv.slice(2));
+
   const questions: DistinctQuestion<PromptAnswers>[] = [];
 
   if (!argv.host) {
