@@ -145,6 +145,19 @@ describe('promptPassword', () => {
     exitSpy.mockRestore();
   });
 
+  it('rejects clearly if the stream ends before Enter is pressed', async () => {
+    const input = new FakeReadStream();
+    const output = new FakeWriteStream();
+
+    const resultPromise = promptPassword('Password:', input as never, output as never);
+
+    input.emit('data', 'a');
+    input.emit('end');
+
+    await expect(resultPromise).rejects.toThrow('Input ended unexpectedly while waiting for a response.');
+    expect(input.setRawMode).toHaveBeenCalledWith(false);
+  });
+
   it('falls back to a plain (unmasked) read when the stream is not a TTY', async () => {
     const fake = makeFakeInterface(['piped-secret']);
     mockedCreateInterface.mockReturnValue(fake as never);

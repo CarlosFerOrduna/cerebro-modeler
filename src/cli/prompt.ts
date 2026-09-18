@@ -71,7 +71,7 @@ export function promptPassword(
     return askLine(rl, '').then(
       answer => {
         rl.close();
-        return answer.trim();
+        return answer;
       },
       err => {
         rl.close();
@@ -80,7 +80,7 @@ export function promptPassword(
     );
   }
 
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     output.write(`${message} `);
 
     let buffer = '';
@@ -92,6 +92,12 @@ export function promptPassword(
       input.setRawMode(false);
       input.pause();
       input.removeListener('data', onData);
+      input.removeListener('end', onEnd);
+    };
+
+    const onEnd = () => {
+      cleanup();
+      reject(new Error('Input ended unexpectedly while waiting for a response.'));
     };
 
     const onData = (char: string) => {
@@ -122,5 +128,6 @@ export function promptPassword(
     };
 
     input.on('data', onData);
+    input.on('end', onEnd);
   });
 }
