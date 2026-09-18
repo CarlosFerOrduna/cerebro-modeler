@@ -1,6 +1,6 @@
 import { parseArgs as parseNodeArgs } from 'node:util';
 
-import { createPromptSession, promptConfirm, promptPassword, promptText } from './prompt';
+import { promptConfirm, promptPassword, promptText } from './prompt';
 
 export interface CliArgs {
   engine?: 'mssql';
@@ -176,61 +176,30 @@ export const parseArgs = async (): Promise<CliArgs> => {
 
   const answers: PromptAnswers = {};
 
-  // Readline sessions are bracketed around the raw-mode password prompt: a
-  // readline.Interface actively buffers stdin lines even while idle, which
-  // would race with promptPassword's raw keystroke reader if left open.
-  const preSession = createPromptSession();
-  try {
-    if (!argv.host) {
-      answers.host = await promptText(
-        'Enter database host:',
-        input => (input.trim() !== '' ? true : 'Host is required.'),
-        preSession
-      );
-    }
+  if (!argv.host) {
+    answers.host = await promptText('Enter database host:', input => (input.trim() !== '' ? true : 'Host is required.'));
+  }
 
-    if (!argv.user) {
-      answers.user = await promptText(
-        'Enter database user:',
-        input => (input.trim() !== '' ? true : 'User is required.'),
-        preSession
-      );
-    }
-  } finally {
-    preSession.close();
+  if (!argv.user) {
+    answers.user = await promptText('Enter database user:', input => (input.trim() !== '' ? true : 'User is required.'));
   }
 
   if (!argv.password) {
     answers.password = await promptPassword('Enter database password:');
   }
 
-  const postSession = createPromptSession();
-  try {
-    if (!argv.database) {
-      answers.database = await promptText(
-        'Enter database name:',
-        input => (input.trim() !== '' ? true : 'Database is required.'),
-        postSession
+  if (!argv.database) {
+    answers.database = await promptText('Enter database name:', input => (input.trim() !== '' ? true : 'Database is required.'));
+  }
+
+  if (!argv.tables) {
+    const allTables = await promptConfirm('No tables were specified. Do you want to generate models for all tables?', true);
+
+    if (!allTables) {
+      answers.tables = await promptText('Enter table names (comma-separated):', input =>
+        input.trim() !== '' ? true : 'Please specify at least one table.'
       );
     }
-
-    if (!argv.tables) {
-      const allTables = await promptConfirm(
-        'No tables were specified. Do you want to generate models for all tables?',
-        true,
-        postSession
-      );
-
-      if (!allTables) {
-        answers.tables = await promptText(
-          'Enter table names (comma-separated):',
-          input => (input.trim() !== '' ? true : 'Please specify at least one table.'),
-          postSession
-        );
-      }
-    }
-  } finally {
-    postSession.close();
   }
 
   const port = Number(argv.port);

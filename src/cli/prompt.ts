@@ -1,9 +1,5 @@
 import { createInterface, type Interface } from 'node:readline/promises';
 
-export function createPromptSession(): Interface {
-  return createInterface({ input: process.stdin, output: process.stdout });
-}
-
 /**
  * `rl.question()` never settles if the underlying stream ends (e.g. piped
  * input running out) while it's pending -- the process just exits silently
@@ -28,12 +24,8 @@ function askLine(rl: Interface, prompt: string): Promise<string> {
   });
 }
 
-export async function promptText(
-  message: string,
-  validate?: (input: string) => true | string,
-  session?: Interface
-): Promise<string> {
-  const rl = session ?? createInterface({ input: process.stdin, output: process.stdout });
+export async function promptText(message: string, validate?: (input: string) => true | string): Promise<string> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
 
   try {
     while (true) {
@@ -46,12 +38,12 @@ export async function promptText(
       console.log(result);
     }
   } finally {
-    if (!session) rl.close();
+    rl.close();
   }
 }
 
-export async function promptConfirm(message: string, defaultValue: boolean, session?: Interface): Promise<boolean> {
-  const rl = session ?? createInterface({ input: process.stdin, output: process.stdout });
+export async function promptConfirm(message: string, defaultValue: boolean): Promise<boolean> {
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
 
   try {
     const suffix = defaultValue ? 'Y/n' : 'y/N';
@@ -60,7 +52,7 @@ export async function promptConfirm(message: string, defaultValue: boolean, sess
     if (answer === '') return defaultValue;
     return answer === 'y' || answer === 'yes';
   } finally {
-    if (!session) rl.close();
+    rl.close();
   }
 }
 
