@@ -1,6 +1,6 @@
 import { parseArgs as parseNodeArgs } from 'node:util';
 
-import inquirer, { DistinctQuestion } from 'inquirer';
+import { createPromptSession, promptConfirm, promptPassword, promptText } from './prompt';
 
 export interface CliArgs {
   engine?: 'mssql';
@@ -169,68 +169,69 @@ function parseRawArgs(rawArgs: string[]): RawArgValues {
 
 type PromptAnswers = Partial<Pick<CliArgs, 'host' | 'user' | 'password' | 'database' | 'writeMode'>> & {
   tables?: string;
-  allTables?: boolean;
 };
 
 export const parseArgs = async (): Promise<CliArgs> => {
   const argv = parseRawArgs(process.argv.slice(2));
 
-  const questions: DistinctQuestion<PromptAnswers>[] = [];
+  const answers: PromptAnswers = {};
 
-  if (!argv.host) {
-    questions.push({
-      type: 'input',
-      name: 'host',
-      message: 'Enter database host:',
-      validate: input => input.trim() !== '' || 'Host is required.',
-    });
-  }
+  // Readline sessions are bracketed around the raw-mode password prompt: a
+  // readline.Interface actively buffers stdin lines even while idle, which
+  // would race with promptPassword's raw keystroke reader if left open.
+  const preSession = createPromptSession();
+  try {
+    if (!argv.host) {
+      answers.host = await promptText(
+        'Enter database host:',
+        input => (input.trim() !== '' ? true : 'Host is required.'),
+        preSession
+      );
+    }
 
-  if (!argv.user) {
-    questions.push({
-      type: 'input',
-      name: 'user',
-      message: 'Enter database user:',
-      validate: input => input.trim() !== '' || 'User is required.',
-    });
+    if (!argv.user) {
+      answers.user = await promptText(
+        'Enter database user:',
+        input => (input.trim() !== '' ? true : 'User is required.'),
+        preSession
+      );
+    }
+  } finally {
+    preSession.close();
   }
 
   if (!argv.password) {
-    questions.push({
-      type: 'password',
-      name: 'password',
-      message: 'Enter database password:',
-      mask: '*',
-    });
+    answers.password = await promptPassword('Enter database password:');
   }
 
-  if (!argv.database) {
-    questions.push({
-      type: 'input',
-      name: 'database',
-      message: 'Enter database name:',
-      validate: input => input.trim() !== '' || 'Database is required.',
-    });
+  const postSession = createPromptSession();
+  try {
+    if (!argv.database) {
+      answers.database = await promptText(
+        'Enter database name:',
+        input => (input.trim() !== '' ? true : 'Database is required.'),
+        postSession
+      );
+    }
+
+    if (!argv.tables) {
+      const allTables = await promptConfirm(
+        'No tables were specified. Do you want to generate models for all tables?',
+        true,
+        postSession
+      );
+
+      if (!allTables) {
+        answers.tables = await promptText(
+          'Enter table names (comma-separated):',
+          input => (input.trim() !== '' ? true : 'Please specify at least one table.'),
+          postSession
+        );
+      }
+    }
+  } finally {
+    postSession.close();
   }
-
-  if (!argv.tables) {
-    questions.push({
-      type: 'confirm',
-      name: 'allTables',
-      message: 'No tables were specified. Do you want to generate models for all tables?',
-      default: true,
-    });
-
-    questions.push({
-      type: 'input',
-      name: 'tables',
-      message: 'Enter table names (comma-separated):',
-      when: answers => answers.allTables === false,
-      validate: input => input.trim() !== '' || 'Please specify at least one table.',
-    });
-  }
-
-  const answers = await inquirer.prompt<PromptAnswers>(questions);
 
   const port = Number(argv.port);
 

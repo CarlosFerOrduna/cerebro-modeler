@@ -14,6 +14,8 @@ function makeFakeInterface(answers: string[]) {
   return {
     question: jest.fn(async () => answers[call++]),
     close: jest.fn(),
+    once: jest.fn(),
+    off: jest.fn(),
   };
 }
 
@@ -35,6 +37,24 @@ describe('promptText', () => {
 
     await expect(promptText('Enter user:', validate)).resolves.toBe('sa');
     expect(fake.question).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects clearly if the underlying stream closes before an answer arrives', async () => {
+    let closeHandler: (() => void) | undefined;
+    const fake = {
+      question: jest.fn(() => new Promise<string>(() => {})),
+      close: jest.fn(),
+      once: jest.fn((event: string, handler: () => void) => {
+        if (event === 'close') closeHandler = handler;
+      }),
+      off: jest.fn(),
+    };
+    mockedCreateInterface.mockReturnValue(fake as never);
+
+    const resultPromise = promptText('Enter host:');
+    closeHandler?.();
+
+    await expect(resultPromise).rejects.toThrow('Input ended unexpectedly while waiting for a response.');
   });
 });
 
