@@ -144,7 +144,7 @@ The final file name is composed like this:
 
 ## ✍️ Inline Mode
 
-Use `--write-mode inline` to overwrite entities directly in your existing project.  
+Use `--writeMode inline` to overwrite entities directly in your existing project.  
 Useful for regenerating up-to-date models without touching unrelated files.
 
 ---
