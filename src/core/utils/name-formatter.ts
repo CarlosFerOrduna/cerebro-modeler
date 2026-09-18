@@ -44,7 +44,7 @@ export class NameFormatter {
     suffix?: string,
     fileExtension?: string
   ): string {
-    const result = this.applyCase(this.applyAffixes(raw, prefix, suffix), caseType);
+    const result = this.applyAffixes(this.applyCase(raw, caseType), prefix, suffix);
     return fileExtension ? `${result}.${fileExtension}` : result;
   }
 
