@@ -15,9 +15,13 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
-    "noEmit": false
+    "noEmit": false,
+    "isolatedModules": true
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts"
   ]
 }
