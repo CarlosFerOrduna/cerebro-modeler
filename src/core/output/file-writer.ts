@@ -53,7 +53,7 @@ export class FileWriter {
   private async formatWithPrettier(code: string, filepath: string): Promise<string> {
     try {
       const options = await prettier.resolveConfig(filepath);
-      return prettier.format(code, { ...options, filepath });
+      return await prettier.format(code, { ...options, filepath });
     } catch (err) {
       console.warn(`⚠️ Prettier failed on ${filepath}: ${err}`);
       return code;
