@@ -1,5 +1,6 @@
-import fs from 'fs-extra';
 import path from 'path';
+
+import fs from 'node:fs/promises';
 import prettier from 'prettier';
 
 export class FileWriter {
@@ -13,7 +14,7 @@ export class FileWriter {
   async writeFiles(files: Map<string, string>): Promise<void> {
     for (const [filename, content] of files.entries()) {
       const outputPath = await this.resolvePath(filename);
-      await fs.ensureDir(path.dirname(outputPath));
+      await fs.mkdir(path.dirname(outputPath), { recursive: true });
 
       const formatted = await this.formatWithPrettier(content, outputPath);
       await fs.writeFile(outputPath, formatted, 'utf-8');
