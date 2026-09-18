@@ -1,7 +1,7 @@
+import fs from 'node:fs/promises';
 import path from 'path';
 
-import fs from 'node:fs/promises';
-import prettier from 'prettier';
+import { format, resolveConfig } from 'prettier';
 
 export class FileWriter {
   private ignoredDirs = ['node_modules', '.git', 'dist', 'out'];
@@ -53,8 +53,8 @@ export class FileWriter {
 
   private async formatWithPrettier(code: string, filepath: string): Promise<string> {
     try {
-      const options = await prettier.resolveConfig(filepath);
-      return await prettier.format(code, { ...options, filepath });
+      const options = await resolveConfig(filepath);
+      return await format(code, { ...options, filepath });
     } catch (err) {
       console.warn(`⚠️ Prettier failed on ${filepath}: ${err}`);
       return code;
