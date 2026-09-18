@@ -1,6 +1,6 @@
+import { parseArgs as parseNodeArgs } from 'node:util';
+
 import inquirer, { DistinctQuestion } from 'inquirer';
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
 
 export interface CliArgs {
   engine?: 'mssql';
@@ -27,136 +27,145 @@ export interface CliArgs {
   fileExtension?: string;
 }
 
+interface OptionDef {
+  name: string;
+  short?: string;
+  alias?: string;
+  type: 'string' | 'boolean';
+  default?: string | boolean;
+  choices?: readonly string[];
+  description: string;
+}
+
+const OPTION_DEFS: OptionDef[] = [
+  { name: 'engine', short: 'e', type: 'string', default: 'mssql', choices: ['mssql'], description: 'Database engine' },
+  { name: 'host', short: 'h', type: 'string', description: 'Database host' },
+  { name: 'port', short: 'p', type: 'string', default: '1433', description: 'Database port' },
+  { name: 'user', short: 'u', type: 'string', description: 'Database user' },
+  { name: 'password', short: 'x', type: 'string', description: 'Database password' },
+  { name: 'database', short: 'd', type: 'string', description: 'Database name' },
+  { name: 'schema', short: 's', type: 'string', default: 'dbo', description: 'Schema name' },
+  { name: 'tables', short: 't', type: 'string', description: 'List of tables to generate (comma-separated)' },
+  { name: 'output', short: 'o', type: 'string', default: './out', description: 'Output directory for generated files' },
+  { name: 'ssl', type: 'boolean', default: false, description: 'Use SSL connection to the database' },
+  {
+    name: 'writeMode',
+    short: 'w',
+    type: 'string',
+    default: 'out',
+    choices: ['inline', 'out'],
+    description: 'Write strategy: "inline" to overwrite project entities, "out" to export to standalone folder',
+  },
+  {
+    name: 'caseFile',
+    alias: 'cf',
+    type: 'string',
+    default: 'pascal',
+    choices: ['pascal', 'camel', 'snake', 'kebab'],
+    description: 'Naming convention for generated file names (e.g., MyEntity.ts, myEntity.ts, my_entity.ts)',
+  },
+  {
+    name: 'caseClass',
+    alias: 'cc',
+    type: 'string',
+    default: 'pascal',
+    choices: ['pascal', 'camel', 'snake'],
+    description: 'Naming convention for class names inside entity files (e.g., MyEntity, myEntity, my_entity)',
+  },
+  {
+    name: 'caseProperty',
+    alias: 'cp',
+    type: 'string',
+    default: 'camel',
+    choices: ['pascal', 'camel', 'snake'],
+    description: 'Naming convention for property names in entity fields (e.g., createdAt, CreatedAt, created_at)',
+  },
+  { name: 'prefixFile', alias: 'pf', type: 'string', description: 'Optional prefix for generated file names (e.g., "I" -> IMyEntity.ts)' },
+  { name: 'suffixFile', alias: 'sf', type: 'string', description: 'Optional suffix for generated file names (e.g., ".model" -> MyEntity.model.ts)' },
+  { name: 'prefixClass', alias: 'pc', type: 'string', description: 'Optional prefix for class names (e.g., "I" -> IMyEntity)' },
+  { name: 'suffixClass', alias: 'sc', type: 'string', description: 'Optional suffix for class names (e.g., "Model" -> MyEntityModel)' },
+  { name: 'prefixProperty', alias: 'pp', type: 'string', description: 'Optional prefix for property names (e.g., "_" -> _createdAt)' },
+  { name: 'suffixProperty', alias: 'sp', type: 'string', description: 'Optional suffix for property names (e.g., "_" -> createdAt_)' },
+  { name: 'fileExtension', alias: 'fe', type: 'string', description: 'Optional suffix for generated file names before ".ts" (e.g., "entity" -> user.entity.ts)' },
+  { name: 'ignoreTables', alias: 'it', type: 'string', description: 'List of tables to ignore (comma-separated)' },
+  { name: 'help', type: 'boolean', default: false, description: 'Show this help message' },
+];
+
+function expandLongAliases(rawArgs: string[]): string[] {
+  return rawArgs.map(arg => {
+    const matchingDef = OPTION_DEFS.find(
+      def => def.alias && (arg === `--${def.alias}` || arg.startsWith(`--${def.alias}=`))
+    );
+    if (!matchingDef) return arg;
+
+    const [, value] = arg.split('=');
+    return value === undefined ? `--${matchingDef.name}` : `--${matchingDef.name}=${value}`;
+  });
+}
+
+function buildParseArgsOptions(): Record<string, { type: 'string' | 'boolean'; short?: string; default?: string | boolean }> {
+  const options: Record<string, { type: 'string' | 'boolean'; short?: string; default?: string | boolean }> = {};
+
+  for (const def of OPTION_DEFS) {
+    options[def.name] = {
+      type: def.type,
+      ...(def.short ? { short: def.short } : {}),
+      ...(def.default !== undefined ? { default: def.default } : {}),
+    };
+  }
+
+  return options;
+}
+
+function printHelp(): void {
+  console.log('Usage: cerebro-modeler [options]\n');
+
+  for (const def of OPTION_DEFS) {
+    const flags = [`--${def.name}`, def.short ? `-${def.short}` : undefined, def.alias ? `--${def.alias}` : undefined]
+      .filter(Boolean)
+      .join(', ');
+
+    console.log(`  ${flags}\n      ${def.description}`);
+  }
+}
+
+function validateChoice(name: string, value: string, choices: readonly string[]): void {
+  if (!choices.includes(value)) {
+    throw new Error(`Invalid value "${value}" for --${name}. Expected one of: ${choices.join(', ')}.`);
+  }
+}
+
+type RawArgValues = Record<string, string | boolean | undefined>;
+
+function parseRawArgs(rawArgs: string[]): RawArgValues {
+  const { values } = parseNodeArgs({
+    args: expandLongAliases(rawArgs),
+    options: buildParseArgsOptions(),
+    strict: false,
+  });
+
+  if (values.help) {
+    printHelp();
+    process.exit(0);
+  }
+
+  for (const def of OPTION_DEFS) {
+    if (def.choices && values[def.name] !== undefined) {
+      validateChoice(def.name, values[def.name] as string, def.choices);
+    }
+  }
+
+  return values as RawArgValues;
+}
+
+const argv = parseRawArgs(process.argv.slice(2));
+
 type PromptAnswers = Partial<Pick<CliArgs, 'host' | 'user' | 'password' | 'database' | 'writeMode'>> & {
   tables?: string;
   allTables?: boolean;
 };
 
 export const parseArgs = async (): Promise<CliArgs> => {
-  const argv = yargs(hideBin(process.argv))
-    .scriptName('cerebro-modeler')
-    .option('engine', {
-      alias: 'e',
-      choices: ['mssql'] as const,
-      description: 'Database engine',
-      default: 'mssql',
-    })
-    .option('host', {
-      alias: 'h',
-      type: 'string',
-      description: 'Database host',
-    })
-    .option('port', {
-      alias: 'p',
-      type: 'number',
-      description: 'Database port',
-      default: 1433,
-    })
-    .option('user', {
-      alias: 'u',
-      type: 'string',
-      description: 'Database user',
-    })
-    .option('password', {
-      alias: 'x',
-      type: 'string',
-      description: 'Database password',
-    })
-    .option('database', {
-      alias: 'd',
-      type: 'string',
-      description: 'Database name',
-    })
-    .option('schema', {
-      alias: 's',
-      type: 'string',
-      description: 'Schema name',
-      default: 'dbo',
-    })
-    .option('tables', {
-      alias: 't',
-      type: 'string',
-      description: 'List of tables to generate (comma-separated)',
-    })
-    .option('output', {
-      alias: 'o',
-      type: 'string',
-      description: 'Output directory for generated files',
-      default: './out',
-    })
-    .option('ssl', {
-      type: 'boolean',
-      description: 'Use SSL connection to the database',
-      default: false,
-    })
-    .option('writeMode', {
-      alias: 'w',
-      choices: ['inline', 'out'] as const,
-      description: 'Write strategy: "inline" to overwrite project entities, "out" to export to standalone folder',
-      default: 'out',
-      type: 'string',
-    })
-    .option('caseFile', {
-      alias: 'cf',
-      choices: ['pascal', 'camel', 'snake', 'kebab'] as const,
-      description: 'Naming convention for generated file names (e.g., MyEntity.ts, myEntity.ts, my_entity.ts)',
-      default: 'pascal',
-    })
-    .option('caseClass', {
-      alias: 'cc',
-      choices: ['pascal', 'camel', 'snake'] as const,
-      description: 'Naming convention for class names inside entity files (e.g., MyEntity, myEntity, my_entity)',
-      default: 'pascal',
-    })
-    .option('caseProperty', {
-      alias: 'cp',
-      choices: ['pascal', 'camel', 'snake'] as const,
-      description: 'Naming convention for property names in entity fields (e.g., createdAt, CreatedAt, created_at)',
-      default: 'camel',
-    })
-    .option('prefixFile', {
-      alias: 'pf',
-      type: 'string',
-      description: 'Optional prefix for generated file names (e.g., "I" → IMyEntity.ts)',
-    })
-    .option('suffixFile', {
-      alias: 'sf',
-      type: 'string',
-      description: 'Optional suffix for generated file names (e.g., ".model" → MyEntity.model.ts)',
-    })
-    .option('prefixClass', {
-      alias: 'pc',
-      type: 'string',
-      description: 'Optional prefix for class names (e.g., "I" → IMyEntity)',
-    })
-    .option('suffixClass', {
-      alias: 'sc',
-      type: 'string',
-      description: 'Optional suffix for class names (e.g., "Model" → MyEntityModel)',
-    })
-    .option('prefixProperty', {
-      alias: 'pp',
-      type: 'string',
-      description: 'Optional prefix for property names (e.g., "_" → _createdAt)',
-    })
-    .option('suffixProperty', {
-      alias: 'sp',
-      type: 'string',
-      description: 'Optional suffix for property names (e.g., "_" → createdAt_)',
-    })
-    .option('fileExtension', {
-      alias: 'fe',
-      type: 'string',
-      description: 'Optional suffix for generated file names before ".ts" (e.g., "entity" → user.entity.ts)',
-    })
-    .option('ignoreTables', {
-      alias: 'it',
-      type: 'string',
-      description: 'List of tables to ignore (comma-separated)',
-    })
-    .help()
-    .parseSync();
-
   const questions: DistinctQuestion<PromptAnswers>[] = [];
 
   if (!argv.host) {
@@ -214,32 +223,34 @@ export const parseArgs = async (): Promise<CliArgs> => {
 
   const answers = await inquirer.prompt<PromptAnswers>(questions);
 
+  const port = Number(argv.port);
+
   return {
     engine: argv.engine as 'mssql',
-    host: (answers.host ?? argv.host)!,
-    port: argv.port,
-    user: (answers.user ?? argv.user)!,
-    password: (answers.password ?? argv.password)!,
-    database: (answers.database ?? argv.database)!,
-    schema: argv.schema,
+    host: (answers.host ?? (argv.host as string))!,
+    port: Number.isNaN(port) ? 1433 : port,
+    user: (answers.user ?? (argv.user as string))!,
+    password: (answers.password ?? (argv.password as string))!,
+    database: (answers.database ?? (argv.database as string))!,
+    schema: argv.schema as string,
     tables: answers.tables
       ? answers.tables.split(',').map(t => t.trim())
       : argv.tables
-        ? argv.tables.split(',').map(t => t.trim())
+        ? (argv.tables as string).split(',').map(t => t.trim())
         : [],
-    output: argv.output,
-    ssl: argv.ssl,
+    output: argv.output as string,
+    ssl: argv.ssl as boolean,
     writeMode: argv.writeMode as 'inline' | 'out',
     caseFile: argv.caseFile as 'pascal' | 'camel' | 'snake' | 'kebab',
     caseClass: argv.caseClass as 'pascal' | 'camel' | 'snake',
     caseProperty: argv.caseProperty as 'pascal' | 'camel' | 'snake',
-    prefixFile: argv.prefixFile,
-    prefixClass: argv.prefixClass,
-    prefixProperty: argv.prefixProperty,
-    suffixFile: argv.suffixFile,
-    suffixClass: argv.suffixClass,
-    suffixProperty: argv.suffixProperty,
-    fileExtension: argv.fileExtension,
-    ignoreTables: argv.ignoreTables ? argv.ignoreTables.split(',').map(t => t.trim()) : [],
+    prefixFile: argv.prefixFile as string | undefined,
+    prefixClass: argv.prefixClass as string | undefined,
+    prefixProperty: argv.prefixProperty as string | undefined,
+    suffixFile: argv.suffixFile as string | undefined,
+    suffixClass: argv.suffixClass as string | undefined,
+    suffixProperty: argv.suffixProperty as string | undefined,
+    fileExtension: argv.fileExtension as string | undefined,
+    ignoreTables: argv.ignoreTables ? (argv.ignoreTables as string).split(',').map(t => t.trim()) : [],
   };
 };
