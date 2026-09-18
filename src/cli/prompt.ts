@@ -32,6 +32,10 @@ export async function promptConfirm(message: string, defaultValue: boolean): Pro
   }
 }
 
+const CTRL_C = String.fromCharCode(3);
+const BACKSPACE_DEL = String.fromCharCode(127);
+const BACKSPACE_BS = String.fromCharCode(8);
+
 export function promptPassword(
   message: string,
   input: NodeJS.ReadStream = process.stdin,
@@ -61,7 +65,7 @@ export function promptPassword(
     };
 
     const onData = (char: string) => {
-      if (char === '') {
+      if (char === CTRL_C) {
         cleanup();
         output.write('\n');
         process.exit(130);
@@ -75,7 +79,7 @@ export function promptPassword(
         return;
       }
 
-      if (char === '' || char === '\b') {
+      if (char === BACKSPACE_DEL || char === BACKSPACE_BS) {
         if (buffer.length > 0) {
           buffer = buffer.slice(0, -1);
           output.write('\b \b');

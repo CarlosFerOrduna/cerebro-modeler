@@ -102,7 +102,7 @@ describe('promptPassword', () => {
 
     input.emit('data', 'a');
     input.emit('data', 'b');
-    input.emit('data', '');
+    input.emit('data', String.fromCharCode(127));
     input.emit('data', 'c');
     input.emit('data', '\r');
 
@@ -117,7 +117,7 @@ describe('promptPassword', () => {
 
     void promptPassword('Password:', input as never, output as never);
     input.emit('data', 'a');
-    input.emit('data', '');
+    input.emit('data', String.fromCharCode(3));
 
     expect(exitSpy).toHaveBeenCalledWith(130);
     expect(input.setRawMode).toHaveBeenCalledWith(false);
