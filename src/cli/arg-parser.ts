@@ -129,36 +129,57 @@ export class ArgParser {
       }
     }
 
+    const tables = ArgParser.getString(argv, 'tables');
+    const ignoreTables = ArgParser.getString(argv, 'ignoreTables');
     const port = Number(argv.port);
 
     return {
-      engine: argv.engine as 'mssql',
-      host: (answers.host ?? (argv.host as string))!,
+      engine: ArgParser.getChoice(argv, 'engine', ['mssql'] as const),
+      host: (answers.host ?? ArgParser.getString(argv, 'host'))!,
       port: Number.isNaN(port) ? 1433 : port,
-      user: (answers.user ?? (argv.user as string))!,
-      password: (answers.password ?? (argv.password as string))!,
-      database: (answers.database ?? (argv.database as string))!,
-      schema: argv.schema as string,
+      user: (answers.user ?? ArgParser.getString(argv, 'user'))!,
+      password: (answers.password ?? ArgParser.getString(argv, 'password'))!,
+      database: (answers.database ?? ArgParser.getString(argv, 'database'))!,
+      schema: ArgParser.getString(argv, 'schema')!,
       tables: answers.tables
         ? answers.tables.split(',').map(t => t.trim())
-        : argv.tables
-          ? (argv.tables as string).split(',').map(t => t.trim())
+        : tables
+          ? tables.split(',').map(t => t.trim())
           : [],
-      output: argv.output as string,
-      ssl: argv.ssl as boolean,
-      writeMode: argv.writeMode as 'inline' | 'out',
-      caseFile: argv.caseFile as 'pascal' | 'camel' | 'snake' | 'kebab',
-      caseClass: argv.caseClass as 'pascal' | 'camel' | 'snake',
-      caseProperty: argv.caseProperty as 'pascal' | 'camel' | 'snake',
-      prefixFile: argv.prefixFile as string | undefined,
-      prefixClass: argv.prefixClass as string | undefined,
-      prefixProperty: argv.prefixProperty as string | undefined,
-      suffixFile: argv.suffixFile as string | undefined,
-      suffixClass: argv.suffixClass as string | undefined,
-      suffixProperty: argv.suffixProperty as string | undefined,
-      fileExtension: argv.fileExtension as string | undefined,
-      ignoreTables: argv.ignoreTables ? (argv.ignoreTables as string).split(',').map(t => t.trim()) : [],
+      output: ArgParser.getString(argv, 'output')!,
+      ssl: ArgParser.getBoolean(argv, 'ssl'),
+      writeMode: ArgParser.getChoice(argv, 'writeMode', ['inline', 'out'] as const),
+      caseFile: ArgParser.getChoice(argv, 'caseFile', ['pascal', 'camel', 'snake', 'kebab'] as const),
+      caseClass: ArgParser.getChoice(argv, 'caseClass', ['pascal', 'camel', 'snake'] as const),
+      caseProperty: ArgParser.getChoice(argv, 'caseProperty', ['pascal', 'camel', 'snake'] as const),
+      prefixFile: ArgParser.getString(argv, 'prefixFile'),
+      prefixClass: ArgParser.getString(argv, 'prefixClass'),
+      prefixProperty: ArgParser.getString(argv, 'prefixProperty'),
+      suffixFile: ArgParser.getString(argv, 'suffixFile'),
+      suffixClass: ArgParser.getString(argv, 'suffixClass'),
+      suffixProperty: ArgParser.getString(argv, 'suffixProperty'),
+      fileExtension: ArgParser.getString(argv, 'fileExtension'),
+      ignoreTables: ignoreTables ? ignoreTables.split(',').map(t => t.trim()) : [],
     };
+  }
+
+  private static getString(values: RawArgValues, name: string): string | undefined {
+    const value = values[name];
+    return typeof value === 'string' ? value : undefined;
+  }
+
+  private static getBoolean(values: RawArgValues, name: string): boolean {
+    return values[name] === true;
+  }
+
+  /** `validateChoice` already guaranteed `values[name]` is one of `choices` before `parse()` runs. */
+  private static getChoice<T extends string>(values: RawArgValues, name: string, choices: readonly T[]): T {
+    const value = values[name];
+    if (typeof value === 'string' && choices.some(choice => choice === value)) {
+      return value as T;
+    }
+
+    throw new Error(`Expected --${name} to be one of: ${choices.join(', ')}.`);
   }
 
   private static parseRawArgs(rawArgs: string[]): RawArgValues {
@@ -174,11 +195,15 @@ export class ArgParser {
     }
 
     for (const def of ArgParser.OPTION_DEFS) {
-      if (def.choices && values[def.name] !== undefined) {
-        ArgParser.validateChoice(def.name, values[def.name] as string, def.choices);
+      const value = values[def.name];
+      if (def.choices && typeof value === 'string') {
+        ArgParser.validateChoice(def.name, value, def.choices);
       }
     }
 
+    // node:util's typings for parseArgs can't infer a precise per-option result type from an
+    // options object built at runtime (buildParseArgsOptions), so this is the one unavoidable
+    // seam between its generic result and this module's own RawArgValues shape.
     return values as RawArgValues;
   }
 
