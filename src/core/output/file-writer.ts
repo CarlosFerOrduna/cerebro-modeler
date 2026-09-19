@@ -3,12 +3,14 @@ import path from 'path';
 
 import { format, resolveConfig } from 'prettier';
 
+import { WriteMode } from './types';
+
 export class FileWriter {
   private ignoredDirs = ['node_modules', '.git', 'dist', 'out'];
 
   constructor(
     private outputDir: string,
-    private writeMode: 'inline' | 'out' = 'out'
+    private writeMode: WriteMode = 'out'
   ) {}
 
   async writeFiles(files: Map<string, string>): Promise<void> {

@@ -3,3 +3,4 @@ export * from './import-generator';
 export * from './index-decorator-generator';
 export * from './property-generator';
 export * from './relation-generator';
+export * from './sql-type-catalog';

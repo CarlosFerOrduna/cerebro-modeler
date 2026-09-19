@@ -4,7 +4,7 @@ import { ForeignKey } from '../models/ForeignKey';
 import { Index } from '../models/Index';
 import { Table } from '../models/Table';
 
-import { ColumnRow, ForeignKeyRow, IndexRow, PrimaryKeyRow } from './fetcher';
+import { ColumnRow, ForeignKeyRow, IndexGroup, IndexRow, PrimaryKeyGroup, PrimaryKeyRow } from './types';
 
 export class MssqlSchemaBuilder {
   constructor(private schema: string) {}
@@ -33,7 +33,7 @@ export class MssqlSchemaBuilder {
       tableMap.get(key)!.columns.push(col);
     }
 
-    const pkGroups = new Map<string, { tableName: string; pkName: string; columns: string[] }>();
+    const pkGroups = new Map<string, PrimaryKeyGroup>();
     for (const row of primaryKeys) {
       const key = row.tableName;
       if (!pkGroups.has(key)) pkGroups.set(key, { tableName: key, pkName: row.pkName, columns: [] });
@@ -53,10 +53,7 @@ export class MssqlSchemaBuilder {
       table.indexes.push(new Index(pkName, columns, true, true));
     }
 
-    const indexGroups = new Map<
-      string,
-      { tableName: string; indexName: string; isPrimaryKey: boolean; isUnique: boolean; columns: string[] }
-    >();
+    const indexGroups = new Map<string, IndexGroup>();
 
     for (const row of indexes) {
       const key = `${row.tableName}::${row.indexName}`;

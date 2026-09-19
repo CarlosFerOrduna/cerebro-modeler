@@ -1,103 +1,13 @@
 import { parseArgs as parseNodeArgs } from 'node:util';
 
+import { WRITE_MODES } from '../core/output/types';
+import { CASE_TYPES } from '../core/utils/types';
+
+import { OPTION_DEFS } from './option-catalog';
 import { Prompt } from './prompt';
-
-export interface CliArgs {
-  engine?: 'mssql';
-  host: string;
-  port: number;
-  user: string;
-  password: string;
-  database: string;
-  schema: string;
-  tables: string[];
-  ignoreTables: string[];
-  output: string;
-  ssl: boolean;
-  writeMode: 'inline' | 'out';
-  caseFile: 'pascal' | 'camel' | 'snake' | 'kebab';
-  caseClass: 'pascal' | 'camel' | 'snake';
-  caseProperty: 'pascal' | 'camel' | 'snake';
-  prefixFile?: string;
-  prefixClass?: string;
-  prefixProperty?: string;
-  suffixFile?: string;
-  suffixClass?: string;
-  suffixProperty?: string;
-  fileExtension?: string;
-}
-
-interface OptionDef {
-  name: string;
-  short?: string;
-  alias?: string;
-  type: 'string' | 'boolean';
-  default?: string | boolean;
-  choices?: readonly string[];
-  description: string;
-}
-
-type RawArgValues = Record<string, string | boolean | undefined>;
-
-type PromptAnswers = Partial<Pick<CliArgs, 'host' | 'user' | 'password' | 'database' | 'writeMode'>> & {
-  tables?: string;
-};
+import { CliArgs, ParseArgsOptionSpec, PromptAnswers, RawArgValues } from './types';
 
 export class ArgParser {
-  private static readonly OPTION_DEFS: OptionDef[] = [
-    { name: 'engine', short: 'e', type: 'string', default: 'mssql', choices: ['mssql'], description: 'Database engine' },
-    { name: 'host', short: 'h', type: 'string', description: 'Database host' },
-    { name: 'port', short: 'p', type: 'string', default: '1433', description: 'Database port' },
-    { name: 'user', short: 'u', type: 'string', description: 'Database user' },
-    { name: 'password', short: 'x', type: 'string', description: 'Database password' },
-    { name: 'database', short: 'd', type: 'string', description: 'Database name' },
-    { name: 'schema', short: 's', type: 'string', default: 'dbo', description: 'Schema name' },
-    { name: 'tables', short: 't', type: 'string', description: 'List of tables to generate (comma-separated)' },
-    { name: 'output', short: 'o', type: 'string', default: './out', description: 'Output directory for generated files' },
-    { name: 'ssl', type: 'boolean', default: false, description: 'Use SSL connection to the database' },
-    {
-      name: 'writeMode',
-      short: 'w',
-      type: 'string',
-      default: 'out',
-      choices: ['inline', 'out'],
-      description: 'Write strategy: "inline" to overwrite project entities, "out" to export to standalone folder',
-    },
-    {
-      name: 'caseFile',
-      alias: 'cf',
-      type: 'string',
-      default: 'pascal',
-      choices: ['pascal', 'camel', 'snake', 'kebab'],
-      description: 'Naming convention for generated file names (e.g., MyEntity.ts, myEntity.ts, my_entity.ts)',
-    },
-    {
-      name: 'caseClass',
-      alias: 'cc',
-      type: 'string',
-      default: 'pascal',
-      choices: ['pascal', 'camel', 'snake'],
-      description: 'Naming convention for class names inside entity files (e.g., MyEntity, myEntity, my_entity)',
-    },
-    {
-      name: 'caseProperty',
-      alias: 'cp',
-      type: 'string',
-      default: 'camel',
-      choices: ['pascal', 'camel', 'snake'],
-      description: 'Naming convention for property names in entity fields (e.g., createdAt, CreatedAt, created_at)',
-    },
-    { name: 'prefixFile', alias: 'pf', type: 'string', description: 'Optional prefix for generated file names (e.g., "I" -> IMyEntity.ts)' },
-    { name: 'suffixFile', alias: 'sf', type: 'string', description: 'Optional suffix for generated file names (e.g., ".model" -> MyEntity.model.ts)' },
-    { name: 'prefixClass', alias: 'pc', type: 'string', description: 'Optional prefix for class names (e.g., "I" -> IMyEntity)' },
-    { name: 'suffixClass', alias: 'sc', type: 'string', description: 'Optional suffix for class names (e.g., "Model" -> MyEntityModel)' },
-    { name: 'prefixProperty', alias: 'pp', type: 'string', description: 'Optional prefix for property names (e.g., "_" -> _createdAt)' },
-    { name: 'suffixProperty', alias: 'sp', type: 'string', description: 'Optional suffix for property names (e.g., "_" -> createdAt_)' },
-    { name: 'fileExtension', alias: 'fe', type: 'string', description: 'Optional suffix for generated file names before ".ts" (e.g., "entity" -> user.entity.ts)' },
-    { name: 'ignoreTables', alias: 'it', type: 'string', description: 'List of tables to ignore (comma-separated)' },
-    { name: 'help', type: 'boolean', default: false, description: 'Show this help message' },
-  ];
-
   static async parse(): Promise<CliArgs> {
     const argv = ArgParser.parseRawArgs(process.argv.slice(2));
 
@@ -148,8 +58,8 @@ export class ArgParser {
           : [],
       output: ArgParser.getString(argv, 'output')!,
       ssl: ArgParser.getBoolean(argv, 'ssl'),
-      writeMode: ArgParser.getChoice(argv, 'writeMode', ['inline', 'out'] as const),
-      caseFile: ArgParser.getChoice(argv, 'caseFile', ['pascal', 'camel', 'snake', 'kebab'] as const),
+      writeMode: ArgParser.getChoice(argv, 'writeMode', WRITE_MODES),
+      caseFile: ArgParser.getChoice(argv, 'caseFile', CASE_TYPES),
       caseClass: ArgParser.getChoice(argv, 'caseClass', ['pascal', 'camel', 'snake'] as const),
       caseProperty: ArgParser.getChoice(argv, 'caseProperty', ['pascal', 'camel', 'snake'] as const),
       prefixFile: ArgParser.getString(argv, 'prefixFile'),
@@ -194,7 +104,7 @@ export class ArgParser {
       process.exit(0);
     }
 
-    for (const def of ArgParser.OPTION_DEFS) {
+    for (const def of OPTION_DEFS) {
       const value = values[def.name];
       if (def.choices && typeof value === 'string') {
         ArgParser.validateChoice(def.name, value, def.choices);
@@ -209,9 +119,7 @@ export class ArgParser {
 
   private static expandLongAliases(rawArgs: string[]): string[] {
     return rawArgs.map(arg => {
-      const matchingDef = ArgParser.OPTION_DEFS.find(
-        def => def.alias && (arg === `--${def.alias}` || arg.startsWith(`--${def.alias}=`))
-      );
+      const matchingDef = OPTION_DEFS.find(def => def.alias && (arg === `--${def.alias}` || arg.startsWith(`--${def.alias}=`)));
       if (!matchingDef) return arg;
 
       const equalsIndex = arg.indexOf('=');
@@ -221,10 +129,10 @@ export class ArgParser {
     });
   }
 
-  private static buildParseArgsOptions(): Record<string, { type: 'string' | 'boolean'; short?: string; default?: string | boolean }> {
-    const options: Record<string, { type: 'string' | 'boolean'; short?: string; default?: string | boolean }> = {};
+  private static buildParseArgsOptions(): Record<string, ParseArgsOptionSpec> {
+    const options: Record<string, ParseArgsOptionSpec> = {};
 
-    for (const def of ArgParser.OPTION_DEFS) {
+    for (const def of OPTION_DEFS) {
       options[def.name] = {
         type: def.type,
         ...(def.short ? { short: def.short } : {}),
@@ -238,7 +146,7 @@ export class ArgParser {
   private static printHelp(): void {
     console.log('Usage: cerebro-modeler [options]\n');
 
-    for (const def of ArgParser.OPTION_DEFS) {
+    for (const def of OPTION_DEFS) {
       const flags = [`--${def.name}`, def.short ? `-${def.short}` : undefined, def.alias ? `--${def.alias}` : undefined]
         .filter(Boolean)
         .join(', ');

@@ -1,35 +1,37 @@
+import { CaseType } from './types';
+
 export class NameFormatter {
   static toCamelCase(str: string): string {
-    const words = this.splitWords(str);
-    return [words[0].toLowerCase(), ...words.slice(1).map(this.capitalize)].join('');
+    const words = NameFormatter.splitWords(str);
+    return [words[0].toLowerCase(), ...words.slice(1).map(NameFormatter.capitalize)].join('');
   }
 
   static toPascalCase(str: string): string {
-    return this.splitWords(str).map(this.capitalize).join('');
+    return NameFormatter.splitWords(str).map(NameFormatter.capitalize).join('');
   }
 
   static toSnakeCase(str: string): string {
-    return this.splitWords(str)
+    return NameFormatter.splitWords(str)
       .map(w => w.toLowerCase())
       .join('_');
   }
 
   static toKebabCase(str: string): string {
-    return this.splitWords(str)
+    return NameFormatter.splitWords(str)
       .map(w => w.toLowerCase())
       .join('-');
   }
 
-  static applyCase(str: string, caseType: 'camel' | 'pascal' | 'snake' | 'kebab'): string {
+  static applyCase(str: string, caseType: CaseType): string {
     switch (caseType) {
       case 'camel':
-        return this.toCamelCase(str);
+        return NameFormatter.toCamelCase(str);
       case 'pascal':
-        return this.toPascalCase(str);
+        return NameFormatter.toPascalCase(str);
       case 'snake':
-        return this.toSnakeCase(str);
+        return NameFormatter.toSnakeCase(str);
       case 'kebab':
-        return this.toKebabCase(str);
+        return NameFormatter.toKebabCase(str);
     }
   }
 
@@ -39,12 +41,12 @@ export class NameFormatter {
 
   static formatName(
     raw: string,
-    caseType: 'camel' | 'pascal' | 'snake' | 'kebab',
+    caseType: CaseType,
     prefix?: string,
     suffix?: string,
     fileExtension?: string
   ): string {
-    const result = this.applyAffixes(this.applyCase(raw, caseType), prefix, suffix);
+    const result = NameFormatter.applyAffixes(NameFormatter.applyCase(raw, caseType), prefix, suffix);
     return fileExtension ? `${result}.${fileExtension}` : result;
   }
 

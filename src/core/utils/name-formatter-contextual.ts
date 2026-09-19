@@ -1,5 +1,7 @@
-import { NameFormatter } from './name-formatter';
 import pluralize from 'pluralize';
+
+import { NameFormatter } from './name-formatter';
+import { CaseType } from './types';
 
 export interface NameFormatterOptions {
   file?: FileNamingOptions;
@@ -12,7 +14,7 @@ export interface FileNamingOptions extends NamingOptions {
 }
 
 export interface NamingOptions {
-  case: 'camel' | 'pascal' | 'snake' | 'kebab';
+  case: CaseType;
   prefix?: string;
   suffix?: string;
 }

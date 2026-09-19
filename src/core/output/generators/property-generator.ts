@@ -1,6 +1,8 @@
 import { Column, Table } from '../../schema';
 import { NameFormatterContextual } from '../../utils';
 
+import { BOOLEAN_SQL_TYPES, DATE_SQL_TYPES, LENGTHLESS_SQL_TYPES, NUMBER_SQL_TYPES } from './sql-type-catalog';
+
 export class PropertyGenerator {
   constructor(
     private table: Table,
@@ -42,7 +44,7 @@ export class PropertyGenerator {
 
   private columnOptions(col: Column): string {
     const opts: string[] = [];
-    const isNotLengthyType = !['datetime', 'datetime2', 'bit', 'date', 'int', 'bigint', 'smallint'].includes(col.type);
+    const isNotLengthyType = !LENGTHLESS_SQL_TYPES.includes(col.type);
 
     if (col.isNullable) {
       opts.push(`nullable: true`);
@@ -67,9 +69,9 @@ export class PropertyGenerator {
 
   private tsType(sqlType: string): string {
     const type = sqlType.toLowerCase();
-    if (['int', 'decimal', 'float', 'bigint', 'smallint', 'numeric', 'money'].includes(type)) return 'number';
-    if (['bit'].includes(type)) return 'boolean';
-    if (['datetime', 'date', 'smalldatetime', 'timestamp'].includes(type)) return 'Date';
+    if (NUMBER_SQL_TYPES.includes(type)) return 'number';
+    if (BOOLEAN_SQL_TYPES.includes(type)) return 'boolean';
+    if (DATE_SQL_TYPES.includes(type)) return 'Date';
     return 'string';
   }
 }
