@@ -13,10 +13,50 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
     const builder = new MssqlSchemaBuilder('dbo');
 
     const columns = [
-      { tableName: 'users', columnName: 'id', dataType: 'int', isNullable: false, isIdentity: true },
-      { tableName: 'users', columnName: 'name', dataType: 'nvarchar', isNullable: false, isIdentity: false },
-      { tableName: 'orders', columnName: 'id', dataType: 'int', isNullable: false, isIdentity: true },
-      { tableName: 'orders', columnName: 'userId', dataType: 'int', isNullable: false, isIdentity: false },
+      {
+        tableName: 'users',
+        columnName: 'id',
+        dataType: 'int',
+        isNullable: false,
+        isIdentity: true,
+        maxLength: null,
+        precision: null,
+        scale: null,
+        defaultValue: null,
+      },
+      {
+        tableName: 'users',
+        columnName: 'name',
+        dataType: 'nvarchar',
+        isNullable: false,
+        isIdentity: false,
+        maxLength: 255,
+        precision: null,
+        scale: null,
+        defaultValue: null,
+      },
+      {
+        tableName: 'orders',
+        columnName: 'id',
+        dataType: 'int',
+        isNullable: false,
+        isIdentity: true,
+        maxLength: null,
+        precision: null,
+        scale: null,
+        defaultValue: null,
+      },
+      {
+        tableName: 'orders',
+        columnName: 'userId',
+        dataType: 'int',
+        isNullable: false,
+        isIdentity: false,
+        maxLength: null,
+        precision: null,
+        scale: null,
+        defaultValue: null,
+      },
     ];
 
     const primaryKeys = [
@@ -25,8 +65,8 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
     ];
 
     const indexes = [
-      { tableName: 'users', indexName: 'IX_users_name', isUnique: false, columnName: 'name' },
-      { tableName: 'orders', indexName: 'IX_orders_userId', isUnique: true, columnName: 'userId' },
+      { tableName: 'users', indexName: 'IX_users_name', isUnique: false, isPrimaryKey: false, columnName: 'name' },
+      { tableName: 'orders', indexName: 'IX_orders_userId', isUnique: true, isPrimaryKey: false, columnName: 'userId' },
     ];
 
     const foreignKeys = [
@@ -66,8 +106,28 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
     const builder = new MssqlSchemaBuilder('dbo');
 
     const columns = [
-      { tableName: 'order_items', columnName: 'orderId', dataType: 'int', isNullable: false, isIdentity: false },
-      { tableName: 'order_items', columnName: 'productId', dataType: 'int', isNullable: false, isIdentity: false },
+      {
+        tableName: 'order_items',
+        columnName: 'orderId',
+        dataType: 'int',
+        isNullable: false,
+        isIdentity: false,
+        maxLength: null,
+        precision: null,
+        scale: null,
+        defaultValue: null,
+      },
+      {
+        tableName: 'order_items',
+        columnName: 'productId',
+        dataType: 'int',
+        isNullable: false,
+        isIdentity: false,
+        maxLength: null,
+        precision: null,
+        scale: null,
+        defaultValue: null,
+      },
     ];
 
     const primaryKeys = [
@@ -88,8 +148,22 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
   it('marks a column as unique when covered by a unique index row', () => {
     const builder = new MssqlSchemaBuilder('dbo');
 
-    const columns = [{ tableName: 'users', columnName: 'email', dataType: 'nvarchar', isNullable: false, isIdentity: false }];
-    const indexes = [{ tableName: 'users', indexName: 'UQ_users_email', isUnique: true, columnName: 'email' }];
+    const columns = [
+      {
+        tableName: 'users',
+        columnName: 'email',
+        dataType: 'nvarchar',
+        isNullable: false,
+        isIdentity: false,
+        maxLength: 255,
+        precision: null,
+        scale: null,
+        defaultValue: null,
+      },
+    ];
+    const indexes = [
+      { tableName: 'users', indexName: 'UQ_users_email', isUnique: true, isPrimaryKey: false, columnName: 'email' },
+    ];
 
     const db = builder.buildDatabase(columns, [], indexes, []);
     const table = db.getTableByName('users')!;
@@ -100,7 +174,19 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
   it('does not throw on an orphan foreign key whose source table is missing, and still attaches the inverse side', () => {
     const builder = new MssqlSchemaBuilder('dbo');
 
-    const columns = [{ tableName: 'users', columnName: 'id', dataType: 'int', isNullable: false, isIdentity: true }];
+    const columns = [
+      {
+        tableName: 'users',
+        columnName: 'id',
+        dataType: 'int',
+        isNullable: false,
+        isIdentity: true,
+        maxLength: null,
+        precision: null,
+        scale: null,
+        defaultValue: null,
+      },
+    ];
     const foreignKeys = [
       { fkName: 'FK_ghost_users', sourceTable: 'ghost_table', sourceColumn: 'userId', targetTable: 'users', targetColumn: 'id' },
     ];
