@@ -19,9 +19,9 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
         dataType: 'int',
         isNullable: false,
         isIdentity: true,
-        maxLength: null,
-        precision: null,
-        scale: null,
+        maxLength: 4,
+        precision: 10,
+        scale: 0,
         defaultValue: null,
       },
       {
@@ -30,9 +30,9 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
         dataType: 'nvarchar',
         isNullable: false,
         isIdentity: false,
-        maxLength: 255,
-        precision: null,
-        scale: null,
+        maxLength: 510,
+        precision: 0,
+        scale: 0,
         defaultValue: null,
       },
       {
@@ -41,9 +41,9 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
         dataType: 'int',
         isNullable: false,
         isIdentity: true,
-        maxLength: null,
-        precision: null,
-        scale: null,
+        maxLength: 4,
+        precision: 10,
+        scale: 0,
         defaultValue: null,
       },
       {
@@ -52,9 +52,9 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
         dataType: 'int',
         isNullable: false,
         isIdentity: false,
-        maxLength: null,
-        precision: null,
-        scale: null,
+        maxLength: 4,
+        precision: 10,
+        scale: 0,
         defaultValue: null,
       },
     ];
@@ -112,9 +112,9 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
         dataType: 'int',
         isNullable: false,
         isIdentity: false,
-        maxLength: null,
-        precision: null,
-        scale: null,
+        maxLength: 4,
+        precision: 10,
+        scale: 0,
         defaultValue: null,
       },
       {
@@ -123,9 +123,9 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
         dataType: 'int',
         isNullable: false,
         isIdentity: false,
-        maxLength: null,
-        precision: null,
-        scale: null,
+        maxLength: 4,
+        precision: 10,
+        scale: 0,
         defaultValue: null,
       },
     ];
@@ -155,9 +155,9 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
         dataType: 'nvarchar',
         isNullable: false,
         isIdentity: false,
-        maxLength: 255,
-        precision: null,
-        scale: null,
+        maxLength: 510,
+        precision: 0,
+        scale: 0,
         defaultValue: null,
       },
     ];
@@ -181,9 +181,9 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
         dataType: 'int',
         isNullable: false,
         isIdentity: true,
-        maxLength: null,
-        precision: null,
-        scale: null,
+        maxLength: 4,
+        precision: 10,
+        scale: 0,
         defaultValue: null,
       },
     ];
@@ -212,7 +212,7 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
     expect(db.tables).toHaveLength(0);
   });
 
-  it('maps column fields faithfully, coercing null optional fields to undefined', () => {
+  it('maps column fields faithfully, coercing a null default value to undefined', () => {
     const builder = new MssqlSchemaBuilder('dbo');
 
     const columns = [
@@ -223,7 +223,7 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
         isNullable: true,
         defaultValue: null,
         isIdentity: false,
-        maxLength: null,
+        maxLength: 9,
         precision: 10,
         scale: 2,
       },
@@ -237,7 +237,7 @@ describe('MssqlSchemaBuilder.buildDatabase', () => {
     expect(col.isNullable).toBe(true);
     expect(col.defaultValue).toBeUndefined();
     expect(col.isIdentity).toBe(false);
-    expect(col.length).toBeUndefined();
+    expect(col.length).toBe(9);
     expect(col.precision).toBe(10);
     expect(col.scale).toBe(2);
   });

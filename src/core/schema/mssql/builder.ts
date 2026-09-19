@@ -25,9 +25,9 @@ export class MssqlSchemaBuilder {
         false,
         row.defaultValue ?? undefined,
         row.isIdentity,
-        row.maxLength ?? undefined,
-        row.precision ?? undefined,
-        row.scale ?? undefined
+        row.maxLength,
+        row.precision,
+        row.scale
       );
 
       tableMap.get(key)!.columns.push(col);
