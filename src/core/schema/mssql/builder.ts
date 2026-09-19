@@ -4,10 +4,12 @@ import { ForeignKey } from '../models/ForeignKey';
 import { Index } from '../models/Index';
 import { Table } from '../models/Table';
 
+import { ColumnRow, ForeignKeyRow, IndexRow, PrimaryKeyRow } from './fetcher';
+
 export class MssqlSchemaBuilder {
   constructor(private schema: string) {}
 
-  buildDatabase(columns: any[], primaryKeys: any[], indexes: any[], foreignKeys: any[]): Database {
+  buildDatabase(columns: ColumnRow[], primaryKeys: PrimaryKeyRow[], indexes: IndexRow[], foreignKeys: ForeignKeyRow[]): Database {
     const db = new Database(this.schema);
     const tableMap = new Map<string, Table>();
 

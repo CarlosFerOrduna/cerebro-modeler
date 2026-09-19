@@ -1,9 +1,43 @@
 import { ConnectionPool } from 'mssql';
 
+export interface ColumnRow {
+  tableName: string;
+  columnName: string;
+  dataType: string;
+  isNullable: boolean;
+  isIdentity: boolean;
+  maxLength: number | null;
+  precision: number | null;
+  scale: number | null;
+  defaultValue: string | null;
+}
+
+export interface PrimaryKeyRow {
+  pkName: string;
+  tableName: string;
+  columnName: string;
+}
+
+export interface IndexRow {
+  tableName: string;
+  indexName: string;
+  isUnique: boolean;
+  isPrimaryKey: boolean;
+  columnName: string;
+}
+
+export interface ForeignKeyRow {
+  fkName: string;
+  sourceTable: string;
+  sourceColumn: string;
+  targetTable: string;
+  targetColumn: string;
+}
+
 export class MssqlSchemaFetcher {
   constructor(private pool: ConnectionPool) {}
 
-  async fetchColumns(schema: string, tables: string[], ignoreTables: string[]) {
+  async fetchColumns(schema: string, tables: string[], ignoreTables: string[]): Promise<ColumnRow[]> {
     const tableCondition = tables.length > 0 ? `AND t.name IN (${tables.map((_, i) => `@table${i}`).join(', ')})` : '';
     const ignoreTableCondition =
       ignoreTables.length > 0
@@ -44,7 +78,7 @@ export class MssqlSchemaFetcher {
     return result.recordset;
   }
 
-  async fetchPrimaryKeys(schema: string, tables: string[], ignoreTables: string[]) {
+  async fetchPrimaryKeys(schema: string, tables: string[], ignoreTables: string[]): Promise<PrimaryKeyRow[]> {
     const tableCondition = tables.length > 0 ? `AND t.name IN (${tables.map((_, i) => `@table${i}`).join(', ')})` : '';
     const ignoreTableCondition =
       ignoreTables.length > 0
@@ -75,7 +109,7 @@ export class MssqlSchemaFetcher {
     return result.recordset;
   }
 
-  async fetchIndexes(schema: string, tables: string[], ignoreTables: string[]) {
+  async fetchIndexes(schema: string, tables: string[], ignoreTables: string[]): Promise<IndexRow[]> {
     const tableCondition = tables.length > 0 ? `AND t.name IN (${tables.map((_, i) => `@table${i}`).join(', ')})` : '';
     const ignoreTableCondition =
       ignoreTables.length > 0
@@ -108,7 +142,7 @@ export class MssqlSchemaFetcher {
     return result.recordset;
   }
 
-  async fetchForeignKeys(schema: string, tables: string[], ignoreTables: string[]) {
+  async fetchForeignKeys(schema: string, tables: string[], ignoreTables: string[]): Promise<ForeignKeyRow[]> {
     const fkTableCondition =
       tables.length > 0
         ? `AND (t.name IN (${tables.map((_, i) => `@table${i}`).join(', ')}) OR tgt.name IN (${tables.map((_, i) => `@table${i}_tgt`).join(', ')}))`
