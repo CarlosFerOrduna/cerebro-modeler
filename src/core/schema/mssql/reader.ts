@@ -1,6 +1,8 @@
 import { ConnectionPool } from 'mssql';
+
 import { Database } from '../models/Database';
 import { SchemaReader } from '../schema-reader';
+
 import { MssqlSchemaBuilder } from './builder';
 import { MssqlSchemaFetcher } from './fetcher';
 

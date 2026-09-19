@@ -1,4 +1,5 @@
 import pluralize from 'pluralize';
+
 import { NameFormatterContextual } from './name-formatter-contextual';
 
 describe('NameFormatterContextual', () => {

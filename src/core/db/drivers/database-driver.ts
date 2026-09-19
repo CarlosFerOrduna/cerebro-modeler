@@ -1,4 +1,5 @@
 import { ConnectionPool } from 'mssql';
+
 import { Database } from '../../schema';
 
 export abstract class DatabaseDriver {

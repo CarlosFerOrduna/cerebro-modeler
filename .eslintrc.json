@@ -7,7 +7,7 @@
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "sourceType": "module",
-    "project": "./tsconfig.json"
+    "project": "./tsconfig.eslint.json"
   },
   "plugins": [
     "@typescript-eslint",
@@ -21,6 +21,13 @@
     "plugin:import/typescript",
     "prettier"
   ],
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": "./tsconfig.eslint.json"
+      }
+    }
+  },
   "rules": {
     "no-console": "off",
     "import/order": [

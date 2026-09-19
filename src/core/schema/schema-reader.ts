@@ -1,4 +1,5 @@
 import { ConnectionPool } from 'mssql';
+
 import { Database } from './models/Database';
 
 export interface SchemaReader {

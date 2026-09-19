@@ -1,5 +1,6 @@
 import { Table } from '../../schema';
 import { ImportPathResolver, NameFormatterContextual } from '../../utils';
+
 import { ImportGenerator } from './import-generator';
 import { IndexDecoratorGenerator } from './index-decorator-generator';
 import { PropertyGenerator } from './property-generator';

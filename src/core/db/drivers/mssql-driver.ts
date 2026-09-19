@@ -1,6 +1,8 @@
-import sql, { ConnectionPool, config as SqlConfig } from 'mssql';
-import { CliArgs } from '../../../cli/arg-parser';
+import { connect, ConnectionPool, config as SqlConfig } from 'mssql';
+
+import { CliArgs } from '../../../cli';
 import { Database, MssqlReader } from '../../schema';
+
 import { DatabaseDriver } from './database-driver';
 
 export class MssqlDriver extends DatabaseDriver {
@@ -37,7 +39,7 @@ export class MssqlDriver extends DatabaseDriver {
     };
 
     try {
-      this.pool = await sql.connect(config);
+      this.pool = await connect(config);
       this.log('✔ Connected to database');
     } catch (err) {
       throw new Error(`✖ Failed to connect to database: ${(err as Error).message}`);

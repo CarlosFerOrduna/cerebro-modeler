@@ -1,7 +1,7 @@
+import { ForeignKey, Table } from '../../schema';
+import { NameFormatterContextual } from '../../utils';
+
 import { RelationGenerator } from './relation-generator';
-import { NameFormatterContextual } from '../../utils/name-formatter-contextual';
-import { Table } from '../../schema/models/Table';
-import { ForeignKey } from '../../schema/models/ForeignKey';
 
 function makeFormatter(): NameFormatterContextual {
   return new NameFormatterContextual({
@@ -21,7 +21,7 @@ describe('RelationGenerator', () => {
     const [line] = generator.generate();
 
     expect(line).toBe(
-      "\t@ManyToOne(() => Users, user => user.orders)\n" +
+      '\t@ManyToOne(() => Users, user => user.orders)\n' +
         "\t@JoinColumn([{ name: 'userId', referencedColumnName: 'id' }])\n" +
         '\tuser: Users;'
     );
@@ -40,7 +40,7 @@ describe('RelationGenerator', () => {
     const [line] = generator.generate();
 
     expect(line).toBe(
-      "\t@ManyToOne(() => Users, user => user.placedOrders)\n" +
+      '\t@ManyToOne(() => Users, user => user.placedOrders)\n' +
         "\t@JoinColumn([{ name: 'userId', referencedColumnName: 'id' }])\n" +
         '\tuser: Users;'
     );

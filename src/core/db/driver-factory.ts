@@ -1,4 +1,5 @@
-import { CliArgs } from '../../cli/arg-parser';
+import { CliArgs } from '../../cli';
+
 import { DatabaseDriver, MssqlDriver } from './drivers';
 
 export class DriverFactory {
