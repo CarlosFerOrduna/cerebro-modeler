@@ -62,6 +62,7 @@ describe('PropertyGenerator', () => {
   it('generates the right decorator per column kind', () => {
     const table = new Table('users', 'dbo', [
       new Column('id', 'int', false, false, false, undefined, true),
+      new Column('code', 'varchar', false, true),
       new Column('email', 'varchar', false, false, true),
       new Column('name', 'varchar', true),
     ]);
@@ -71,11 +72,12 @@ describe('PropertyGenerator', () => {
     const lines = generator.generate();
 
     expect(lines[0]).toContain('@PrimaryGeneratedColumn(');
-    expect(lines[1]).toContain('@Column(');
-    expect(lines[1]).toContain('unique: true');
+    expect(lines[1]).toContain('@PrimaryColumn(');
     expect(lines[2]).toContain('@Column(');
-    expect(lines[2]).toContain('nullable: true');
-    expect(lines[2]).toContain('name: string | null;');
-    expect(used).toEqual(new Set(['PrimaryGeneratedColumn', 'Column']));
+    expect(lines[2]).toContain('unique: true');
+    expect(lines[3]).toContain('@Column(');
+    expect(lines[3]).toContain('nullable: true');
+    expect(lines[3]).toContain('name: string | null;');
+    expect(used).toEqual(new Set(['PrimaryGeneratedColumn', 'PrimaryColumn', 'Column']));
   });
 });
