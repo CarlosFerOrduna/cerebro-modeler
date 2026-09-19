@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 
 import path from 'path';
-import { parseArgs } from './cli/arg-parser';
+
+import { ArgParser } from './cli/arg-parser';
 import { DriverFactory } from './core/db';
 import { EntityWriter, FileWriter } from './core/output';
 import { ImportPathResolver, NameFormatterContextual } from './core/utils';
 
 const main = async () => {
   try {
-    const args = await parseArgs();
+    const args = await ArgParser.parse();
     const driver = DriverFactory.create(args);
 
     await driver.connect();

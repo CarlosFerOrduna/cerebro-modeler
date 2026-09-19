@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { createInterface } from 'node:readline/promises';
 
-import { promptConfirm, promptPassword, promptText } from './prompt';
+import { Prompt } from './prompt';
 
 jest.mock('node:readline/promises', () => ({
   createInterface: jest.fn(),
@@ -26,7 +26,7 @@ describe('promptText', () => {
     const fake = makeFakeInterface(['  localhost  ']);
     mockedCreateInterface.mockReturnValue(fake as never);
 
-    await expect(promptText('Enter host:')).resolves.toBe('localhost');
+    await expect(Prompt.text('Enter host:')).resolves.toBe('localhost');
     expect(fake.close).toHaveBeenCalled();
   });
 
@@ -35,7 +35,7 @@ describe('promptText', () => {
     mockedCreateInterface.mockReturnValue(fake as never);
     const validate = (input: string) => (input.trim() !== '' ? true : 'Required.');
 
-    await expect(promptText('Enter user:', validate)).resolves.toBe('sa');
+    await expect(Prompt.text('Enter user:', validate)).resolves.toBe('sa');
     expect(fake.question).toHaveBeenCalledTimes(2);
   });
 
@@ -51,7 +51,7 @@ describe('promptText', () => {
     };
     mockedCreateInterface.mockReturnValue(fake as never);
 
-    const resultPromise = promptText('Enter host:');
+    const resultPromise = Prompt.text('Enter host:');
     closeHandler?.();
 
     await expect(resultPromise).rejects.toThrow('Input ended unexpectedly while waiting for a response.');
@@ -65,17 +65,17 @@ describe('promptConfirm', () => {
     const fake = makeFakeInterface(['']);
     mockedCreateInterface.mockReturnValue(fake as never);
 
-    await expect(promptConfirm('All tables?', true)).resolves.toBe(true);
+    await expect(Prompt.confirm('All tables?', true)).resolves.toBe(true);
   });
 
   it('returns true for "y"/"yes" and false otherwise', async () => {
     const fakeYes = makeFakeInterface(['y']);
     mockedCreateInterface.mockReturnValue(fakeYes as never);
-    await expect(promptConfirm('All tables?', false)).resolves.toBe(true);
+    await expect(Prompt.confirm('All tables?', false)).resolves.toBe(true);
 
     const fakeNo = makeFakeInterface(['n']);
     mockedCreateInterface.mockReturnValue(fakeNo as never);
-    await expect(promptConfirm('All tables?', true)).resolves.toBe(false);
+    await expect(Prompt.confirm('All tables?', true)).resolves.toBe(false);
   });
 });
 
@@ -102,7 +102,7 @@ describe('promptPassword', () => {
     const input = new FakeReadStream();
     const output = new FakeWriteStream();
 
-    const resultPromise = promptPassword('Password:', input as never, output as never);
+    const resultPromise = Prompt.password('Password:', input as never, output as never);
 
     input.emit('data', 'a');
     input.emit('data', 'b');
@@ -118,7 +118,7 @@ describe('promptPassword', () => {
     const input = new FakeReadStream();
     const output = new FakeWriteStream();
 
-    const resultPromise = promptPassword('Password:', input as never, output as never);
+    const resultPromise = Prompt.password('Password:', input as never, output as never);
 
     input.emit('data', 'a');
     input.emit('data', 'b');
@@ -135,7 +135,7 @@ describe('promptPassword', () => {
     const output = new FakeWriteStream();
     const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
 
-    void promptPassword('Password:', input as never, output as never);
+    void Prompt.password('Password:', input as never, output as never);
     input.emit('data', 'a');
     input.emit('data', String.fromCharCode(3));
 
@@ -149,7 +149,7 @@ describe('promptPassword', () => {
     const input = new FakeReadStream();
     const output = new FakeWriteStream();
 
-    const resultPromise = promptPassword('Password:', input as never, output as never);
+    const resultPromise = Prompt.password('Password:', input as never, output as never);
 
     input.emit('data', 'a');
     input.emit('end');
@@ -166,6 +166,6 @@ describe('promptPassword', () => {
     input.isTTY = false;
     const output = new FakeWriteStream();
 
-    await expect(promptPassword('Password:', input as never, output as never)).resolves.toBe('piped-secret');
+    await expect(Prompt.password('Password:', input as never, output as never)).resolves.toBe('piped-secret');
   });
 });
