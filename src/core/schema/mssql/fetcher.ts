@@ -33,6 +33,7 @@ export class MssqlSchemaFetcher {
       WHERE s.name = @schema
       ${tableCondition}
       ${ignoreTableCondition}
+      ORDER BY t.name, c.column_id
     `;
 
     const result = await columnRequest.query(query);

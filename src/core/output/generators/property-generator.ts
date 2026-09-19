@@ -12,10 +12,11 @@ export class PropertyGenerator {
     const fkCols = new Set(this.table.foreignKeys.map(fk => fk.sourceColumns[0]));
     const idxCol = new Set(this.table.indexes.flatMap(idx => idx.columns));
 
-    return this.table.columns
-      .filter(col => idxCol.has(col.name) || !fkCols.has(col.name))
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map(col => this.buildColumn(col));
+    const columns = this.table.columns.filter(col => idxCol.has(col.name) || !fkCols.has(col.name));
+    const primaryColumns = columns.filter(col => col.isPrimary || col.isIdentity);
+    const remainingColumns = columns.filter(col => !col.isPrimary && !col.isIdentity);
+
+    return [...primaryColumns, ...remainingColumns].map(col => this.buildColumn(col));
   }
 
   private buildColumn(col: Column): string {
@@ -59,7 +60,7 @@ export class PropertyGenerator {
       opts.push(`scale: ${col.scale}`);
     }
     if (col.defaultValue) {
-      opts.push(`default: () => '${col.defaultValue.replace(/\'/g, '').replace(/^\((.+)\)$/, '$1')}'`);
+      opts.push(`default: () => '${col.defaultValue.replace(/'/g, '').replace(/^\((.+)\)$/, '$1')}'`);
     }
     return opts.length ? ', ' + opts.join(', ') : '';
   }
