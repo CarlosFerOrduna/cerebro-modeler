@@ -14,6 +14,9 @@ export class MssqlSchemaFetcher {
     tables.forEach((table, i) => columnRequest.input(`table${i}`, table));
     ignoreTables.forEach((table, i) => columnRequest.input(`ignore_table${i}`, table));
 
+    // t.name mantiene el orden de aparición de las tablas determinístico (builder.ts agrupa en un
+    // Map, que preserva el orden de inserción, y entity-writer no vuelve a ordenar); column_id es
+    // lo que realmente define el orden de las columnas dentro de cada tabla.
     const query = `
       SELECT
         t.name AS tableName,

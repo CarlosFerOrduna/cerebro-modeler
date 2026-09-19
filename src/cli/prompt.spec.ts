@@ -19,7 +19,7 @@ function makeFakeInterface(answers: string[]) {
   };
 }
 
-describe('promptText', () => {
+describe('Prompt.text', () => {
   afterEach(() => jest.clearAllMocks());
 
   it('returns the trimmed answer when there is no validator', async () => {
@@ -58,7 +58,7 @@ describe('promptText', () => {
   });
 });
 
-describe('promptConfirm', () => {
+describe('Prompt.confirm', () => {
   afterEach(() => jest.clearAllMocks());
 
   it('returns the default when the answer is empty', async () => {
@@ -79,7 +79,7 @@ describe('promptConfirm', () => {
   });
 });
 
-describe('promptPassword', () => {
+describe('Prompt.password', () => {
   class FakeReadStream extends EventEmitter {
     isTTY = true;
     setRawMode = jest.fn();

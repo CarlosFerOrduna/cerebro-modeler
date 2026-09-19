@@ -28,6 +28,21 @@ describe('PropertyGenerator', () => {
     expect(lines[3]).toContain('createdAt: Date;');
   });
 
+  it('preserves table order within the primary/identity group too, not alphabetical', () => {
+    const table = new Table('widgets', 'dbo', [
+      new Column('zetaCode', 'varchar', false, true),
+      new Column('alphaId', 'int', false, false, false, undefined, true),
+      new Column('name', 'varchar', false),
+    ]);
+
+    const generator = new PropertyGenerator(table, new Set(), makeFormatter());
+    const lines = generator.generate();
+
+    expect(lines[0]).toContain('zetaCode:');
+    expect(lines[1]).toContain('alphaId:');
+    expect(lines[2]).toContain('name:');
+  });
+
   it('drops an unindexed foreign-key source column', () => {
     const table = new Table(
       'orders',
